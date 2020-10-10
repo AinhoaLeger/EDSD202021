@@ -24,12 +24,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Exercise 1 
 
-The first step to work with the practice data set of the [German Socio Economic Panel (SOEP)](https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip) is to save it locally. After telling R where we want the data to be located, we download and unzip it in the specified path.
+The first step to work with the practice data set of the [German Socio Economic Panel (SOEP)](https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip) is to download and unzip.
 
 ```{r}
-# Directory to be set by the user
-setwd("...")
-
 # Download and unzip the file  
 soep_url <- 
   "https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip"
