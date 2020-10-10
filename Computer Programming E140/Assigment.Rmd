@@ -1,0 +1,276 @@
+---
+title: "European Doctoral School of Demography (EDSD)  \n Computer Programming E140"
+author: 
+ - Özer Bakar  
+ - Calderon Bernal Liliana Patricia  
+ - Gonzalo Daniel Garcia  
+ - Ainhoa Elena Leger  
+ - Özge Elif Özer
+date: "10 October 2020"
+output: pdf_document
+bibliography: references.bib
+header-includes: 
+  - \renewcommand{\and}{\\}
+  - \usepackage{url}
+  - \usepackage{hyperref}
+  - \hypersetup{colorlinks=true,linkcolor={blue},citecolor={blue},filecolor={blue},urlcolor={blue}}
+  - \usepackage[style=philosophy-classic,hyperref,backref=false,natbib,backend=biber]{biblatex}
+  - \bibliography{references.bib}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise 1 
+
+The first step to work with the practice data set of the [German Socio Economic Panel (SOEP)](https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip) is to save it locally. After telling R where we want the data to be located, we download and unzip it in the specified path.
+
+```{r}
+# Directory to be set by the user
+setwd("...")
+
+# Download and unzip the file  
+soep_url <- "https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip"
+destfile <- "soep_lebensz_en.zip"
+download.file(soep_url, destfile)
+unzip(zipfile = "soep_lebensz_en.zip")
+```
+
+## 1a) Load the data set into R
+
+We load the \texttt{foreign} and \texttt{tidyverse} packages which will be useful to solve the exercises. The \texttt{read.dta()} function allows us to load the Stata's database into R.
+
+```{r message=FALSE}
+# Loading necessary libraries to solve the assignment
+#install.packages("foreign")
+#install.packages("tidyverse")
+
+library(foreign)
+library(tidyverse)
+
+# Importing the Stata data into R framework by using foreign library
+soep <- read.dta("soep_lebensz_en.dta", convert.factors = TRUE)
+```
+
+Let's have a look whether the data set has been correctly imported.
+
+```{r}
+glimpse(soep)
+```
+
+The practice data set consists of a total of 9 variables and 12922 observations. Two variables identify the individuals and the year of the survey, while the other collect information about sex, education measured in years, number of kids, perceived subjective health, satisfaction in life and their standardized versions.
+
+## 1b) How many unique individuals are included in the practice data set?
+
+We just need to find out how many identification number ID are in the data set, as they are unique for each individual. The function \texttt{unique()} returns the vector with duplicate elements removed and the function \texttt{length()} returns the length of that vector.
+
+```{r}
+soep$id %>% unique %>% length
+```
+
+The same result can be obtained with base R.
+
+```{r include=TRUE, results="hide"}
+length(unique(soep$id))
+```
+
+There are 3550 distinct individuals in the data set.
+
+## 1c) Tabulate the number of observations per year
+
+We group the observations by year and count the observation for each year thanks to the function \texttt{tally()}.
+
+```{r}
+obs_per_year <- soep %>% 
+                  group_by(year) %>% 
+                  tally()
+```
+
+There are 5 years of measurement and more observations in the most distant years. An alternative in base R is to use the function \texttt{table()}. To have an idea of the relative frequencies, we apply the function \texttt{prop.table()}.
+
+```{r}
+prop.table(table(soep$year))
+```
+
+The observations in 2000 constitute the 25\% of the data set and the ones in 2004 the 17\% of the data set.
+
+## 1d) Restrict the data to the most recent year
+
+Both the functions \texttt{filter()} and \texttt{subset()} return a subset of the data and can be used to retain all rows for which the year is the last available. 
+
+```{r}
+last_soep <- soep %>% 
+              filter(year==max(year))
+
+dim(last_soep) # ok
+```
+
+As expected, the new data set contains the same 9 variables but 2250 observations from 2004.
+
+## What is the proportion of females in this subset of the data? 
+
+The function \texttt{prop.table()} used together with the function \texttt{table()} gives us the relative frequencies of females and males.
+
+```{r}
+last_soep$sex %>% table %>% prop.table
+```
+
+About 54.22% of the surveyed individuals are females.
+
+## Is the average subjective health higher for men or for women?
+
+To obtain the average subjective health for men or for women we first need to create a numerical variable from the categorical variable health_org. We look at the levels of health_org and create our numerical variable.
+
+```{r}
+# Levels of the variable health_org
+levels(last_soep$health_org)
+
+# Creation of the corresponding numerical variable
+last_soep$health_num[last_soep$health_org == c("not valid", 
+                                               "does not concern", 
+                                               "no answer")] <- 0
+last_soep$health_num[last_soep$health_org =="bad"]          <- 1
+last_soep$health_num[last_soep$health_org =="poor"]         <- 2
+last_soep$health_num[last_soep$health_org =="satisfactory"] <- 3
+last_soep$health_num[last_soep$health_org =="good"]         <- 4
+last_soep$health_num[last_soep$health_org =="very good"]    <- 5
+```
+
+Let's double check whether the old variable and the new variable coincides.
+
+```{r}
+table(last_soep$health_org, last_soep$health_num)
+```
+
+The creation of the new variable has worked. We can now compute the means for the females and the males. The function \texttt{tapply()} allows us to apply the mean to health_num by group.
+
+```{r}
+tapply(last_soep$health_num, last_soep$sex, mean)
+```
+
+The subjective health is perceived higher in men (3.46 on average) compared to women (3.39 on average).
+
+The code below does the same operations and returns the same results.
+
+```{r}
+last_soep <- last_soep %>% 
+              mutate(health_org_numeric = case_when(
+                health_org %in% c("not valid", "does not concern", "no answer") ~ 0,
+                health_org == "bad" ~ 1,
+                health_org == "poor" ~ 2,
+                health_org == "satisfactory" ~ 3,
+                health_org == "good" ~ 4,
+                health_org == "very good" ~ 5,
+                TRUE ~ NA_real_
+                ))
+
+last_soep %>% 
+  group_by(sex) %>% 
+  filter(health_org != 0) %>% 
+  summarise(mean_subjective_health = mean(health_org_numeric, na.rm = TRUE))
+```
+
+# Exercise 2
+
+## 2a) Load the data
+
+We choose to analyze life expectancies at birth in Italy and we used the \texttt{readHMDweb} from the package \texttt{HMDHFDplus} to read the data online from the [The Human Mortality Database](https://www.mortality.org/).
+
+```{r}
+#install.packages("HMDHFDplus")
+library(HMDHFDplus)
+
+# The user has to provide its own credentials (username and password)
+italy_e0 <- readHMDweb("ITA","E0per", "...", "...")
+```
+
+The data loaded in R contain the life expectancies by gender and for the total population in Italy from 1872 to 2017. Below are the first and last rows of the data set.
+
+```{r}
+head(italy_e0)
+tail(italy_e0)
+```
+
+## 2b) Visualize the trend in life expectancy at birth
+
+We personalize the background theme and plot the trends in life expectancy at birth by gender.
+
+```{r}
+#install.packages("ggplot2")
+library(ggplot2)
+
+# Background theme
+theme_graphs <- function (base_size = 16, base_family = "sans") {
+  theme(plot.title = element_text(size = 16, face = "bold", hjust=0.5, margin = margin(20, 0, 5, 0)),
+        plot.subtitle = element_text(colour = "#000000", size = 14,hjust=0.5, margin = margin(0, 0, 10, 0)),
+        plot.caption = element_text(colour = "#000000", size = 12, hjust=1, margin = margin(10, 0, 20, 0)),
+        plot.background = element_rect(fill = "#F4F5F0"), 
+        panel.background = element_rect(fill = "white", colour = "#000000", linetype = "solid"), 
+        panel.grid.major.x = element_line(colour = "gray79", linetype = "dotted"),
+        panel.grid.major.y = element_line(colour = "gray79", linetype = "dotted"),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_text(size = 14, colour = "#000000", hjust=0.5, face = "bold", margin = margin(10, 0, 10, 0)), 
+        axis.title.y = element_text(size = 14, colour = "#000000", face = "bold", margin = margin(0, 10, 0, 0)), 
+        axis.text = element_text(size = 12, colour = "#000000"),
+        axis.line.y = element_line(colour = "#000000"),
+        axis.line.x = element_line(colour = "#000000"),
+        axis.ticks = element_line(colour = "#000000", size = 1),        
+        legend.text = element_text(size = 12, colour = "#000000"),
+        legend.background = element_rect(fill = "white", colour = "#000000", size = 0.3, linetype = "solid"), 
+        legend.key = element_rect(fill = NA), 
+        legend.position = "bottom",
+        legend.direction = "horizontal")
+}
+
+# Trends in life expectancy
+italy_e0 %>% 
+  select(Year, Female, Male) %>%
+  pivot_longer(., cols = c(Male, Female), names_to = "Sex", values_to = "Life_Exp") %>%
+  ggplot(aes(x = Year, y = Life_Exp, color = Sex)) +
+  theme_graphs() +
+  geom_line(size=1) +
+  scale_colour_manual(limits=c("Female", "Male"), values=c("#008c45", "#cd212a")) +
+  labs(title = "Evolution of life expectancy at birth", 
+       subtitle = "Italy, 1872-2017",        
+       x = "Years", y = "Life Expectancy at Birth", 
+       caption = "Own elaboration\nSource: Human Mortality Database. University of California, Berkeley (USA), and Max Planck Institute for Demographic Research (Germany).", colour = NULL) +
+    scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
+```
+
+The life expectancies at birth are increasing both for men and women. The sharp decreases in 1910-1920 and 1940-1950 are attribuable to war mortality.
+
+## 2c) Visualize the evolution of the gender gap in life expectancy at birth over time 
+
+We define the gender gap in life expectancy at birth for Italy as the life expectancy of females minus the life expectancy of males.
+
+```{r}
+italy_e0$gender_gap <- italy_e0$Female - italy_e0$Male
+summary(italy_e0$gender_gap)
+```
+
+Let's look how it has developed over time.
+
+```{r}
+italy_e0 %>% 
+  ggplot(aes(x = Year, y = gender_gap)) +
+  theme_graphs() +
+  geom_line(size=1) +
+  scale_colour_manual(limits=c("Female", "Male"), values=c("#008c45", "#cd212a")) +
+  labs(title = "Evolution of gender gap in life expectancy at birth", 
+       subtitle = "Italy, 1872-2017",        
+       x = "Years", y = "Gender gap in Life Expectancy at Birth", 
+       caption = "Own elaboration\nSource: Human Mortality Database. University of California, Berkeley (USA), and Max Planck Institute for Demographic Research (Germany).", colour = NULL) +
+  scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
+```
+
+The gender gap has been increasing until 1980, after which it started to decrease.
+
+# References
+
+---
+nocite: '@*'
+---
+
+
+
