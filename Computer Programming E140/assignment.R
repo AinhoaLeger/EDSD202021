@@ -5,11 +5,11 @@
 #####################################################
 
 # Team members
-# Özer Bakar  
+# Ozer Bakar  
 # Liliana Patricia Calderon Bernal  
 # Gonzalo Daniel Garcia  
 # Ainhoa-Elena Leger  
-# Özge Elif Özer
+# Ozge Elif Ozer
 
 #-------------------------------
 # Exercise 1 
@@ -26,8 +26,8 @@ unzip(zipfile = "soep_lebensz_en.zip")
 #-------------------------------
 
 # Loading necessary libraries to solve the assignment
-install.packages("foreign")
-install.packages("tidyverse")
+#install.packages("foreign")
+#install.packages("tidyverse")
 
 library(foreign)
 library(tidyverse)
@@ -111,11 +111,12 @@ last_soep %>%
 # 2a) Load the data
 #--------------------
 
-install.packages("HMDHFDplus")
+#install.packages("HMDHFDplus")
 library(HMDHFDplus)
 
-# The user has to provide its own credentials (username and password)
-italy_e0 <- readHMDweb("ITA","E0per")
+##### The user has to provide its own credentials (username and password) #####
+
+italy_e0 <- readHMDweb("ITA","E0per","","")
 
 head(italy_e0)
 tail(italy_e0)
@@ -123,9 +124,6 @@ tail(italy_e0)
 # 2b) Visualize the trend in life expectancy at birth
 #------------------------------------------------------
   
-install.packages("ggplot2")
-library(ggplot2)
-
 # Customization of the theme 
 theme_graphs <- function (base_size = 16, base_family = "sans") {
   theme(plot.title = element_text(size = 14, face = "bold", 
@@ -172,6 +170,8 @@ italy_e0 %>%
        colour = NULL) +
     scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
 
+ggsave(file="italy_e0.jpeg", width=16, height=8, dpi=300)
+
 # 2c) Visualize the evolution of the gender gap in e0 over time 
 #---------------------------------------------------------------
 
@@ -189,6 +189,8 @@ italy_e0 %>%
        colour = NULL) +
   geom_ribbon(aes(ymin = Male, ymax = Female), fill = "blue", alpha = .5)
 
+ggsave(file="italy_e0_gapA.jpeg", width=16, height=8, dpi=300)
+
 # Measuring the gender gap
 italy_e0$gender_gap <- italy_e0$Female - italy_e0$Male
 
@@ -205,4 +207,7 @@ italy_e0 %>%
        University of California, Berkeley (USA), and Max Planck Institute for Demographic Research (Germany).", 
        colour = NULL) +
   scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
+
+ggsave(file="italy_e0_gapB.jpeg", width=16, height=8, dpi=300)
+
 
