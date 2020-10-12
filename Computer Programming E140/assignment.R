@@ -116,7 +116,7 @@ library(HMDHFDplus)
 
 ##### The user has to provide its own credentials (username and password) #####
 
-italy_e0 <- readHMDweb("ITA","E0per","","")
+italy_e0 <- readHMDweb("ITA","E0per","...","...")
 
 head(italy_e0)
 tail(italy_e0)
