@@ -183,7 +183,7 @@ We choose to analyze life expectancies at birth in Italy and we use the function
 library(HMDHFDplus)
 
 # The user has to provide HMD username and password
-italy_e0 <- readHMDweb("ITA","E0per","...","...")
+italy_e0 <- readHMDweb("ITA","E0per","username","password")
 ```
 
 The data loaded in R contains the life expectancies by gender and for the total population in Italy from 1872 to 2017. Below are the first and last rows of the data set.
