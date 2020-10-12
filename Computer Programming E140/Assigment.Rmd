@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Exercise 1 
 
-The first step to work with the practice data set of the [German Socio Economic Panel (SOEP)](https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip) is to download and unzip.
+The first step to work with the practice data set of the [German Socio Economic Panel (SOEP)](https://www.diw.de/documents/dokumentenarchiv/17/diw_01.c.412698.de/soep_lebensz_en.zip) is to download and unzip it.
 
 ```{r}
 # Download and unzip the file  
@@ -180,10 +180,10 @@ We choose to analyze life expectancies at birth in Italy and we use the function
 library(HMDHFDplus)
 
 # The user has to provide its own credentials (username and password)
-italy_e0 <- readHMDweb("ITA","E0per", "...", "...")
+italy_e0 <- readHMDweb("ITA","E0per")
 ```
 
-The data loaded in R contain the life expectancies by gender and for the total population in Italy from 1872 to 2017. Below are the first and last rows of the data set.
+The data loaded in R contains the life expectancies by gender and for the total population in Italy from 1872 to 2017. Below are the first and last rows of the data set.
 
 ```{r}
 head(italy_e0)
@@ -192,13 +192,13 @@ tail(italy_e0)
 
 ## 2b) Visualize the trend in life expectancy at birth
 
-We personalize the background theme and plot the trends in life expectancy at birth by gender.
+In the following we plot the trends in life expectancy at birth for women and men.
 
-```{r fig.align='center', fig.height=6}
+```{r fig.align='center', fig.height=7}
 #install.packages("ggplot2")
 library(ggplot2)
 
-# Background theme
+# Customization of the theme 
 theme_graphs <- function (base_size = 16, base_family = "sans") {
   theme(plot.title = element_text(size = 14, face = "bold", 
                                   hjust=0.5, margin = margin(20, 0, 5, 0)),
@@ -240,25 +240,42 @@ italy_e0 %>%
        subtitle = "Italy, 1872-2017",        
        x = "Years", y = "Life Expectancy at Birth", 
        caption = "Own elaboration. Source: Human Mortality Database. 
-       University of California, Berkeley (USA), and Max Planck Institute for Demographic Research (Germany).", 
+       University of California, and Max Planck Institute for Demographic Research.", 
        colour = NULL) +
     scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
 ```
 
-The life expectancies at birth are increasing both for men and women. The sharp decreases in 1910-1920 and 1940-1950 are attribuable to war mortality.
+The life expectancies at birth are increasing both for men and women, although with a sharp decreases in the periods 1910-1920 and 1940-1950 attribuable to war mortality. The life expectancies in 1870 are very similar (30.26 for females and 29.28 for males) but from the XX century the gender gap is becoming more and more pronounced. 
 
-## 2c) Visualize the evolution of the gender gap in life expectancy at birth over time 
+## 2c) Visualize the evolution of the gender gap in e0 over time 
 
-We define the gender gap in life expectancy at birth for Italy as the life expectancy of females minus the life expectancy of males.
+A first graphical look at the gender gap is showed in the plot below. The gender gap is represented as the area between the curves of the life expectancies at birth of women and men (coloured in violet).  
 
-```{r}
-italy_e0$gender_gap <- italy_e0$Female - italy_e0$Male
-summary(italy_e0$gender_gap)
+```{r fig.align='center', fig.height=5}
+italy_e0 %>%
+  ggplot(aes(x = Year)) +
+  theme_graphs() +
+  geom_line(aes(y = Male), color = "darkred") +
+  geom_line(aes(y = Female), color="steelblue", linetype="twodash") +
+  scale_color_manual(limits=c("Female", "Male"), values=c("#008c45", "#cd212a")) +
+  labs(title = "Evolution of life expectancy at birth", 
+       subtitle = "Italy, 1872-2017",        
+       x = "Years", y = "Life Expectancy at Birth", 
+       caption = "Own elaboration. Source: Human Mortality Database. 
+       University of California, and Max Planck Institute for Demographic Research.", 
+       colour = NULL) +
+  geom_ribbon(aes(ymin = Male, ymax = Female), fill = "blue", alpha = .5)
 ```
 
-Let's look how it has developed over time.
+The area seems to widen in the periods corresponding to the two World Wars and to become quite constant after the second World War until recent times.
 
-```{r fig.align='center', fig.height=6}
+But let's now try to quantify the gender gap in life expectancy at birth as the life expectancy of females minus the life expectancy of males and see how it has developed over time.
+
+```{r fig.align='center', fig.height=5.5}
+# Measuring the gender gap
+italy_e0$gender_gap <- italy_e0$Female - italy_e0$Male
+
+# Evolution of the gender gap over time
 italy_e0 %>% 
   ggplot(aes(x = Year, y = gender_gap)) +
   theme_graphs() +
@@ -268,12 +285,12 @@ italy_e0 %>%
        subtitle = "Italy, 1872-2017",        
        x = "Years", y = "Gender gap in Life Expectancy at Birth", 
        caption = "Own elaboration. Source: Human Mortality Database. 
-       University of California, Berkeley (USA), and Max Planck Institute for Demographic Research (Germany).", 
+       University of California, and Max Planck Institute for Demographic Research.", 
        colour = NULL) +
   scale_x_continuous(breaks=seq(from=1870,to=2020,by=10),limits=c(1870,2020))
 ```
 
-The gender gap has been increasing until 1980, after which it started to decrease.
+As we observed previously, the gender gap has been increasing from the XX century and was particularly large during the war due to the high men mortality. However, we can now notice a deceleration in this increase after the second war world and a closure of the gap starting from the '80s.
 
 # References
 
