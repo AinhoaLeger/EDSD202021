@@ -1,0 +1,666 @@
+---
+title: "European Doctoral School of Demography (EDSD)  \n E120 Basic Mathematics for Demographers  \n  \n  \n Assignment Team 1"
+author: 
+ - Liliana Patricia Calderon Bernal  
+ - Ainhoa-Elena Leger 
+ - Lucas Pitombeira
+ - Marilyn-Anne Tremblay
+ - Paola Vazquez-Castillo
+date: "14 October 2020"
+output: pdf_document
+bibliography: references.bib
+header-includes: 
+  - \renewcommand{\and}{\\}
+  - \usepackage{mathtools}
+  - \usepackage{mathrsfs}
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{amsfonts}
+  - \usepackage{url}
+  - \usepackage{hyperref}
+  - \hypersetup{colorlinks=true,linkcolor={blue},citecolor={blue},filecolor={blue},urlcolor={blue}}
+  - \usepackage[style=philosophy-classic,hyperref,backref=false,natbib,backend=biber]{biblatex}
+  - \bibliography{references.bib}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include=FALSE}
+# install.packages("tidyverse")
+# install.packages("DescTools")
+# install.packages("wpp2019")
+library(tidyverse)
+library(DescTools)
+library(wpp2019)
+```
+
+```{r include=FALSE}
+setwd("C:/Users/Ainhoa/Desktop/EDSD-PHD/1 - EDSD/2 - Preparatory courses/2 - JM Aburto - Basic Mathematics/3-Assignments-Exams/Assignment 2/Assignment2_v2")
+```
+
+# Exercise 1 
+
+A simplified model of population growth can be expressed as:
+$$P(t)=P(t_o)e^{r(t-t_o)} \tag{1}$$
+
+where $P(t)$ is the population size at time $t$, $P(t_0)$ is the population at initial time $t_0$ and $r$ is the constant growth rate. If interested, see Keyfitz and Caswell (2005, Chap. 1) for a detailed discussion.
+
+## Point a
+
+Suppose the growth rate is $r = 0.01$. In how many years the population will double its size with respect to $P(t_0)$?
+
+[Sol.]
+
+From (1),
+
+$$\frac{P(t)}{P(t_0)}=e^{r(t-t_0)} \Rightarrow ln(\frac{P(t)}{P(t_0)})=r(t-t_0) \Rightarrow \frac{ln(\frac{P(t)}{P(t_0)})}{r}=t-t_0 \tag{a}$$
+
+where, $t-t_0$ is the time elapsed. On the other hand, having the double of the initial population means: 
+
+$$\frac{P(t)}{P(t_0)}=\frac{2P(t_0)}{P(t_0)}=2 \tag{b}$$
+
+Therefore, substituting $(**)$ in $(*)$:
+$$t-t_0=\frac{ln(2)}{r} \tag{c}$$
+Note that $eq.(c)$ is the doubling time for any r. Substituting the data of this problem.
+
+$$\Rightarrow t-t_0=\frac{ln(2)}{0.01}=69.31$$
+
+## Point b
+
+Calculate the growth rate if the population doubles its size in 60 years; if the population triples its size in 100 years; and if the population reduces to 50% of its size in 50 years.
+
+[Sol.]
+
+From (1),
+
+$$r=\frac{ln(\frac{P(t)}{P(t_0)})}{t-t_o} \tag{d}$$
+Therefore, substituting in (d):
+
+b1. $r=\frac{ln(2)}{60}\approx 0.0115$
+
+b2. $r=\frac{ln(3)}{100}\approx 0.0110$
+
+b3. $r=\frac{ln(\frac{1}{2})}{50}\approx -0.0139$  
+
+## Point c
+
+Select three countries of your choice from three different continents. Using data from the World Population Prospects (United Nations, 2017) and applying (1), estimate the growth rate of each of their populations between 1950 and 2015 (ignoring intermediate years).
+
+[Sol.]
+
+We randomly select the countries for the study, based on the countries where the members of the team are native and one from the Asian Tigers. The resulting countries are Italy from Southern Europe, Canada from Northern America and Hong Kong from Eastern Asia.
+
+```{r echo=FALSE}
+# One American Country 
+list<-c("Mexico","Canada","Colombia","Brasil")
+set.seed(333)
+sample(list,1)
+
+# One Asian Country (one among the Asian Tigers)
+list2<-c("Hong Kong","Singapore","South Korea", "Taiwan")
+set.seed(222)
+sample(list2,1)
+```
+
+```{r include= FALSE}
+# Read data
+data("pop")
+
+# Data of interest for ex c and d
+WD <- pop %>% 
+  filter(name %in% c("Canada", "China, Hong Kong SAR", "Italy")) %>% 
+  select("name", "1950", "1990", "2015") %>% 
+  rename(Country = name, P.1950 = "1950", P.1990 = "1990", P.2015 = "2015")
+WD$Country <- recode(WD$Country, "China, Hong Kong SAR" = "Hong Kong")
+```
+
+```{r }
+# c rates 1950-2015
+# HongKong
+rM1950<- (log(WD[1,4]/WD[1,2]))/(2015-1950)
+rM1950
+# Italy
+rI1950<- (log(WD[2,4]/WD[2,2]))/(2015-1950)
+rI1950
+#Canada
+rC1950<- (log(WD[3,4]/WD[3,2]))/(2015-1950)
+rC1950
+```
+
+## Point d
+
+Repeat the same procedure, but in this case compute the population growth between 1990 and 2015.
+
+[Sol.]
+```{r}
+#d rates 1990-2015
+# HongKong
+rM1990<- (log(WD[1,4]/WD[1,3]))/(2015-1990)
+rM1990
+# Italy
+rI1990<- (log(WD[2,4]/WD[2,3]))/(2015-1990)
+rI1990
+# Canada
+rC1990<- (log(WD[3,4]/WD[3,3]))/(2015-1990)
+rC1990
+```
+
+## Point e
+
+For each of the three countries, do a single plot with the observed population counts from 1950 until 2015, adding two lines with each of the estimated populations using the results from the two previous questions (one for 1950–2015, and another for 1990–2015).
+
+```{r echo=FALSE}
+#e plot 
+Mex<-pop%>%
+  filter(country_code==344) %>% 
+  gather(year,pop,3:17)%>%
+  select(year,pop)
+Ita<-pop%>%
+  filter(country_code==380) %>% 
+  gather(year,pop,3:17)%>%
+  select(year,pop)
+Can<-pop%>%
+  filter(country_code==124) %>% 
+  gather(year,pop,3:17)%>%
+  select(year,pop)
+```
+
+```{r echo=FALSE}
+# Years of estimation
+yrs<-c(seq(1950,2015,5))
+# Setting initial populations 
+PM1950<-Mex[1,2]
+PI1950<-Ita[1,2]
+PC1950<-Can[1,2]
+PM1990<-Mex[9,2]
+PI1990<-Ita[9,2]
+PC1990<-Can[9,2]
+Mexr1950<-c(PM1950*(exp(rM1950*(yrs-1950))))
+Mexr1990<-c(PM1950*(exp(rM1990*(yrs-1950))))
+Itar1950<-c(PI1950*(exp(rI1950*(yrs-1950))))
+Itar1990<-c(PI1950*(exp(rI1990*(yrs-1950))))
+Canr1950<-c(PC1950*(exp(rC1950*(yrs-1950))))
+Canr1990<-c(PC1950*(exp(rC1990*(yrs-1950))))
+```
+
+[Sol.]
+
+
+```{r echo=FALSE, fig.align='center', fig.height=4.4}
+# Hong Kong
+matplot(c(seq(1950,2015,5)),cbind(Mex$pop[1:14],
+              Mexr1950,
+              Mexr1990),
+        type="l",
+        ylab = "Population (in thousands)",
+        xlab = "Year",
+        lty = c(1,2,2),
+        col =c("black","red","blue"),
+        main="Population estimates* in Hong Kong,1950-2015")
+legend("topleft",
+       legend = c("Observed","1950-2015 growth rate","1990-2015 growth rate"),
+       col= c("black","red","blue"),
+       lty= c(1,2,2),
+       box.lty=0,
+       cex = 0.8)
+mtext("*Estimates for 2 different growth rates",side=1,line=3,outer=F,
+      cex=0.8,adj=1,at=c(1968),font=3)
+mtext("Source: Own calculations from World Population Prospects, 2019 revision",
+      side=1,line=4,outer=F,cex=0.8,adj=1,at=c(1997),font=3)
+```
+
+```{r echo=FALSE, fig.align='center', fig.height=4.4}
+# Italy
+matplot(c(seq(1950,2015,5)),cbind(Ita$pop[1:14],
+                                  Itar1950,
+                                  Itar1990),
+        type="l",
+        ylab = "Population (in thousands)",
+        xlab = "Year",
+        lty = c(1,2,2),
+        col =c("black","red","blue"),
+        main="Population estimates* in Italy,1950-2015")
+legend("topleft",
+       legend = c("Observed","1950-2015 growth rate","1990-2015 growth rate"),
+       col= c("black","red","blue"),
+       lty= c(1,2,2),
+       box.lty=0,
+       cex = 0.8)
+mtext("*Estimates for 2 different growth rates",side=1,line=3,outer=F,
+      cex=0.8,adj=1,at=c(1965.5),font=3)
+mtext("Source: Own calculations from World Population Prospects, 2019 revision",
+      side=1,line=4,outer=F,cex=0.8,adj=1,at=c(1991),font=3)
+```
+
+```{r echo=FALSE, fig.align='center', fig.height=4.4}
+# Canada
+matplot(c(seq(1950,2015,5)),cbind(Can$pop[1:14],
+                                  Canr1950,
+                                  Canr1990),
+        type="l",
+        ylab = "Population (in thousands)",
+        xlab = "Year",
+        lty = c(1,2,2),
+        col =c("black","red","blue"),
+        main="Population estimates* in Canada,1950-2015")
+legend("topleft",
+       legend = c("Observed","1950-2015 growth rate","1990-2015 growth rate"),
+       col= c("black","red","blue"),
+       lty= c(1,2,2),
+       box.lty=0,
+       cex = 0.8)
+mtext("*Estimates for 2 different growth rates",side=1,line=3,outer=F,
+      cex=0.8,adj=1,at=c(1965.5),font=3)
+mtext("Source: Own calculations from World Population Prospects, 2019 revision",
+      side=1,line=4,outer=F,cex=0.8,adj=1,at=c(1991),font=3)
+```
+
+## Point f
+
+Briefly discuss the differences among the three countries, and which of the estimated growth rates are better according to the graphs.
+
+[Sol.]
+
+From the graph we can note that in the three countries, the blue line, which is considering the growth rates form 1990 to 2015, produce lower population estimates compared to the one considering the 1950-2015 rate. This makes sense considering that these three countries experimented the second phase of the demographic transition somewhen between 1950-1990, meaning that the fertility rates lowered within the period producing lower population estimates. As there was a disrupting event, it is better considering the rates calculated with data form the beginning and the end of the estimation period.
+
+Comparing the three countries, they differ the most on their population sizes, but also in the speed of their growth (measured with the rate of growth), which is also a phenomena that can be appreciated in the graph by comparing the slopes of the lines. 
+
+
+# Exercise 2
+
+One of the most well-known age at marriage distributions for historical populations in the
+demographic literature is the Coale-McNeil model (Coale and McNeil, 1972), which is based on
+a three-parameter double-exponential function. Fitting the curve to Swedish female data from the eighteenth century, Coale and McNeil obtain a "standard distribution" for the ages at first
+marriage, defined as
+$$g_{s}(z) = 0.1946 \cdot \exp \Big{[} {-0.174(z-6.06)-e^{-0.2881(z-6.06)}} \Big{]} \tag{2}$$
+where $z \ge 0$ stands for the age at marriage (age 0 is simply the minimum age at marriage). Trussel (1976) discusses (2) ans suggests a new distribution that includes a scaling parameter $k>0$, given by
+$$ g(z) = g_{s} \Big( \frac{z}{k} \Big) \cdot \frac{1}{k}, \quad z \ge 0 \tag{3} $$
+This scaling parameter makes the distribution of ages at first marriage more fexible. When $k=1$, we obtain the standard distribution described by Coale and McNeil (1972).
+
+## Point a
+
+Estimate the modal age at first marriage of the Coale-McNeil model with respect to the
+scaling parameter $k$ by computing $g'(z)$, using Trussell's (1976) approach.
+
+[Sol.]
+
+We can express the composition of functions (3) substituting (2) as
+
+$$ g_{s}(z) = \frac{1}{k} \cdot 0.1946 \cdot \exp \Big{[} -0.174 \Big( \frac{z}{k}-6.06 \Big) -e^{-0.2881 \big( \frac{z}{k}-6.06 \big) } \Big{]} . $$
+
+The modal age at first marriage is the age in which more marriages are occurring. It is the value in which the function $g_{s}(z)$ has its maximum. Therefore, we need to find the value in which the first derivative of the function equals 0 and verify that it is a local maximum. The first derivative, applying the chain rule, is obtained as
+
+$$ g_{s}'(z) = \frac{1}{k} \cdot 0.1946 \cdot e^{-0.174 \big( \frac{z}{k}-6.06 \big) -e^{-0.2881 \big( \frac{z}{k}-6.06 \big) }} \cdot \Big{[} -\frac{0.174}{k} - e^{-0.2281(\frac{z}{k}-6.06)} \Big( -\frac{0.2881}{k} \Big) \Big{]} .
+\tag{a} \label{derivative} $$
+
+We now look for the value M such that $g_{s}'(M) = 0$. The first part of the expression (\ref{derivative}) (outside the squared brackets) is always different from 0 because of $k>0$ and the exponential function being strictly positive. Then our search is limited to
+
+$$ \frac{-0.174}{k} - e^{-0.2281(\frac{z}{k}-6.06)}(-\frac{0.2881}{k}) = 0 $$
+
+Rearranging the expression
+
+$$e^{-0.2881(\frac{z}{k}-6.06)} = \frac{0.174}{0.2881}$$
+
+and taking the logarithm
+
+$$-0.2881(\frac{z}{k}-6.06) = \ln(\frac{0.174}{0.2881})$$
+
+we obtain the modal age at first marriage $M$ with respect to the scaling parameter $k$
+
+$$M = k \Big{[} 6.06 -(\frac{1}{0.2881})\ln(\frac{0.174}{0.2881}) \Big{]} .
+ \tag{b} \label{modal}$$
+
+We need to check that it is a maximum, i.e. that the second derivative is negative at the modal age at first marriage M. If we call
+
+$$A(z) =  -0.174 \Big( \frac{z}{k}-6.06 \Big) -e^{-0.2881 \big( \frac{z}{k}-6.06 \big) } $$
+
+then the expression (\ref{derivative}) can be rewritten as
+
+$$g_{s}'(z) = \frac{1}{k} \cdot 0.1946 \cdot e^{ A(z) } \cdot A'(z) .$$
+
+The second derivative which we need to search for the maximum is thus
+
+$$g_{s}''(z) = \frac{0.1946}{k} \Big{[} e^{A(z)} \cdot A'(z)^{2} + e^{A(z)} \cdot A''(z) \Big{]} = \frac{0.1946}{k} e^{A(z)} \Big{[} A'(z)^{2} + A''(z) \Big{]} . 
+\tag{c} \label{second_derivative}$$
+
+with
+
+$$A'(z) = -\frac{0.174}{k} - e^{-0.2281(\frac{z}{k}-6.06)} \Big( -\frac{0.2881}{k} \Big), \quad
+  A''(z) =  -e^{-0.2281(\frac{z}{k}-6.06)} \Big( \frac{0.2881}{k} \Big) ^{2} .$$
+
+Let's study the sign of expression (\ref{second_derivative}) at the modal age at first marriage (\ref{modal}). Remind that $k$ is a positive constant, the exponential is always positive, and $A'(M)=0$. Therefore, we need to focus only on $A''(M)$. After substitution of $M$ we get
+
+$$A''(M) =  - \frac{0.174 * 0.2881}{k} < 0 \quad \text{for } k>0.$$
+
+We can also plot the $g_{s}''(z)$ to check graphically its sign at the modal age at marriage with R. For instance, for $k=1$ it is negative in $M=3.96$, which confirms that M is a maximum. 
+
+```{r echo=FALSE, fig.align='center', out.width="85%"}
+# Plot of the second derivative (k=1)
+k=1
+curve( (0.1946/k) * exp(-0.174*(x/k-6.06) - exp(-0.2881*(x/k-6.06))) *
+        ( (-0.174/k+(exp(-0.2881*(x/k-6.06)))*(0.2881/k) )^2 - 
+        (exp(-0.2881*(x/k-6.06)))*((0.2881/k)^2) ) , 
+        xlim=c(0,20), xlab="Age", ylab="g''(Z)", -10, 20)
+abline(h=0, v=0)
+
+# Modal age at first marriage
+M <- k * (6.06 - (1/0.2881)*(0.174/0.2881))
+M
+abline(v=M, col="red")
+```
+
+## Point b
+
+In a single plot, sketch $g(z)$ for 3 different values of $k$: $k=1$, one value of k larger than 1, and another smaller. Plot for values $0 \le z \le 40$.
+
+[Sol.]
+
+```{r echo=FALSE, fig.align='center', out.width="85%"}
+# First age at marriage distribution with parameter k=1
+k = 1
+curve((1/k) * ( (0.1946)*exp( (-0.174)*(x/k-6.06) - exp((-0.2881)*(x/k-6.06)) ) ),
+      0, 40, ylim=c(0,0.18),
+      xlab="Age", ylab="Proportion of first marriages", col = "blue")
+
+# First age at marriage distribution with parameter k=0.5
+k = 0.5
+curve((1/k) * ( (0.1946)*exp( (-0.174)*(x/k-6.06) - exp((-0.2881)*(x/k-6.06)) ) ), 
+      add = TRUE, col = "red")
+
+# First age at marriage distribution with parameter k=1.5
+k = 1.5
+curve((1/k) * ( (0.1946)*exp( (-0.174)*(x/k-6.06) - exp((-0.2881)*(x/k-6.06)) ) ), 
+      add = TRUE, col = "green")
+
+# Add a legend
+legend(33, 0.17,legend=c("k=0.5","k=1","k=1.5"),
+	col=c("red", "blue", "green"), bty="n", cex=0.8, ncol=1, pch=20)
+```
+
+## Point c
+
+Briefly discuss which is the effect of parameter k in the shape of this distribution, and the
+location of the modal age at first marriage.
+
+[Sol.]
+
+Let's compute the modal age at death for the three values of $k$ specified above.
+
+```{r}
+k <- c(0.5, 1, 1.5)
+M <- k * (6.06 - (1/0.2881) * log(0.174/0.2881))
+cbind(k, M)
+```
+
+The parameter $k$ shapes the distribution after the minimum age at marriage. It ranges from $0.2$ (very rapid increase rate of marriage after the minimum age) to $1.7$ (very slow). A value of $k$ equal to $0.5$ indicates a rate of marriage that is double that in the standard population ($k=1$). When $k$ is smaller than 1 the risk of first marriage is concentrated at the very young ages, when $k$ is larger than 1 the risk is distributed over all ages. 
+
+
+# Exercise 3
+
+The force of mortality of the Weibull and logistic models are, respectively,
+
+$$ \mu(x)=ax^{b} \quad \text{and} \quad \mu(x)=c+\frac{ae^{bx}}{1+\alpha e^{bx}} \tag{4}$$
+(Thatcher et al., 1998). Derive, step by step, the corresponding survival functions l(x) and
+distribution of deaths d(x) for each of these two models, taking into account that
+
+$$ l(x)= e^{-\int_{0}^{x}{\mu(s) ds}} \quad \text{and} \quad d(x)= \mu(x) l(x) $$
+
+Try to simplify the final expressions as much as possible. Provide some plots of these survival
+functions and distributions of deaths for reasonable values of parameters of a, b, c, and $\alpha$.
+
+## Weibull model
+
+The survival function is given by
+
+$$l(x)= \exp \Big( -\int_{0}^{x}{\mu(s) ds} \Big) = \exp \Big( -\int_{0}^{x}{as^{b} ds} \Big)
+= \exp \Biggr[-a\cdot \frac{s^{b+1}}{b+1} \Biggr|_0^x \Biggr] 
+= \exp \Biggr[-a\cdot \frac{x^{b+1}}{b+1} + a\cdot \frac{0^{b+1}}{b+1}\Biggr]
+= \exp \Biggr[-a\cdot \frac{x^{b+1}}{b+1}\Biggr] $$
+
+and the death distribution by
+
+$$ d(x)= \mu(x) l(x) = ax^{b} \exp \Big( -\frac{a}{b+1} x^{b+1} \Big) .$$
+
+## Logistic model
+
+The survival function can be calculated as
+
+$$l(x)= \exp \Big( -\int_{0}^{x}{c+\frac{ae^{bx}}{1+\alpha e^{bx}} ds} \Big)
+= \exp \Big( -\int_{0}^{x} c \ dx -\frac{a}{\alpha b} \int_{0}^{x} \frac{\alpha be^{bx}}{1+\alpha e^{bx}} dx \Big)$$
+
+We can recognize the second integral to be a derivative of the form
+
+$$d(\ln|f(x)|)= \frac{f'(x)}{f(x)}$$
+
+that gives us
+
+$$l(x)= \exp \Big( - c x \bigr\lvert_{0}^{x} \ -\frac{a}{\alpha b} \ln \rvert 1+\alpha e^{bx} \lvert \bigr\lvert_{0}^{x} \Big) = \exp \Big{[} - c x -\frac{a}{\alpha b} \Big( \ln(1+\alpha e^{bx})-\ln(1+\alpha) \Big) \Big{]} .$$
+
+Thus,
+
+$$l(x)= \exp \Big{[} - c x -\frac{a}{\alpha b} \Big( \ln \frac{1+\alpha e^{bx}}{1+\alpha} \Big) \Big{]}
+= \exp \Big{[} - c x - \Big( \ln \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{\frac{a}{\alpha b}} \Big{]}
+= e^{- c x} \cdot e^{ -\ln \Big( \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{\frac{a}{\alpha b}} } 
+= e^{- c x} \cdot \Big( \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{-\frac{a}{\alpha b}} $$
+
+The death distribution is
+
+$$d(x)= \mu(x) l(x) = \Big{(} c+\frac{ae^{bx}}{1+\alpha e^{bx}} \Big{)} \Big{(} e^{- c x} \cdot \Big( \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{-\frac{a}{\alpha b}} \Big{)}$$
+
+$$d(x)= c \cdot \Bigg{(} e^{- c x} \cdot \Big{(} \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{-\frac{a}{\alpha b}} \Bigg{)} + \Big( \frac{ae^{bx}}{1+\alpha e^{bx}} \Big{)} \Bigg{(} e^{- c x} \cdot \Big( \frac{1+\alpha e^{bx}}{1+\alpha} \Big)^{-\frac{a}{\alpha b}} \Bigg{)}.$$
+
+
+## Plots for the Weibull model
+
+To obtain an indication of the values of the parameters of $a$ and $b$ to consider, we first study the behaviour of the force of mortality. With this parametrization of the Weibull model, $b$ is the shape parameter.
+
+We calculate the first and second derivative. 
+$$\mu'(x) = abx^{b-1}, \quad \mu''(x) = ab(b-1)x^{b-2} .$$
+
+Three cases for the force of mortality can be highlighted (see Table below): a decreasing trend ($b<0$), an increasing but decelerating trend ($0<b<1$) and an increasing and accelerating trend ($b>1$). See @bebbington2011modelling for more details on these cases. 
+
+| Values of $b$  | I derivative  | II derivative  | 
+|---|---|---| 
+| $b<0$     | $\mu'(x)<0$  | $\mu''(x)>0$  | 
+| $0<b<1$   | $\mu'(x)>0$  | $\mu''(x)<0$  | 
+| $b>1$     | $\mu'(x)>0$  | $\mu''(x)>0$  |
+
+Based on these three cases, we fix the parameter $a=0.02$ and take $b$ equal to -0.5, 0.5, 1, 1.5. The plot below shows the resulting plots.  
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+a <- 0.02
+
+#  Force of mortality curves
+par(mfrow=c(1,3))
+
+b <- -0.5
+curve(a*exp(b*log(x)), 0, 100, main="a) Decreasing", ylab="mu(x)")
+legend("top", legend=c("b=-0.5"), pch=20, cex=1)
+b <- 0.5
+curve(a*exp(b*log(x)), 0, 100, main="b) Increasing but decelerating", ylab="mu(x)")
+legend("top", legend=c("b=0.5"), pch=20, cex=1)
+b <- 1.5
+curve(a*exp(b*log(x)), 0, 100, main="c) Increasing and accelerating", ylab="mu(x)")
+legend("top", legend=c("b=1.5"), pch=20, cex=1)
+```
+
+We now plot the survival functions and distributions of deaths of the Weibull distribution in the three cases.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+a <- 0.02
+
+#  Survival curves
+par(mfrow=c(1,3))
+
+b <- -0.5
+curve( exp(-(a/(b+1))*(x^(b+1))), 0, 100, main="a)", ylab="l(x)")
+legend("topright", legend=c("b=-0.5"), pch=20, cex=1)
+b <- 0.5
+curve( exp(-(a/(b+1))*(x^(b+1))), 0, 100, main="b)", ylab="l(x)")
+legend("topright", legend=c("b=0.5"), pch=20, cex=1)
+b <- 1.5
+curve( exp(-(a/(b+1))*(x^(b+1))),0 , 100, main="c)", ylab="l(x)")
+legend("topright", legend=c("b=1.5"), pch=20, cex=1)
+
+# Distribution of deaths
+par(mfrow=c(1,3))
+
+b <- -0.5
+curve( (a*x^b)*exp(-(a/(b+1))*(x^(b+1))), 0, 100, ylim=c(0,0.15), main="a)", ylab="d(x)")
+legend("topright",legend=c("b=-0.5"), pch=20, cex=1)
+b <- 0.5
+curve( (a*x^b)*exp(-(a/(b+1))*(x^(b+1))), 0, 100, ylim=c(0,0.15), main="b)", ylab="d(x)")
+legend("topright",legend=c("b=0.5"), pch=20, cex=1)
+b <- 1.5
+curve( (a*x^b)*exp(-(a/(b+1))*(x^(b+1))), 0, 100, ylim=c(0,0.15), main="c)", ylab="d(x)")
+legend("topright",legend=c("b=1.5"), pch=20, cex=1)
+```
+
+In the case where the force of mortality is decreasing and high in infancy (a), the survival curve is higher than in the other cases and decreases slowly, and the distribution of death if flat except in the first ages. As $b>0$ increases (b, c) the survival curve becomes more and more sharply decreasing and the distribution of death compressed in the first ages.
+
+## Plots for the logistic model
+
+We refer to the article of @thatcher1999long for the choice of the parameters to plot some logistic models. This article considers the long-term changes in the pattern of mortality and shows the trend in the parameters of the fitted model.
+
+According to @thatcher1999long, the parameter $b$ governs the relative rate at which the force of mortality increases with age. The estimates for $b$ are quite stable between 0.08 and 0.12. The parameter $c$ captures the force of mortality at young adult ages (30-35 years), whereas the force of mortality in the middle range of ages (around 50 years) depends on the parameter $\alpha$.
+
+We choose at first $b=0.12$, $c=0.0001$, $a=0.0002$, $\alpha=0.0001$.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+b <- 0.12
+c <- 0.0001
+a <- 0.0002
+A <- 0.0001
+
+# Force of mortality, Survival function, Distribution of deaths 
+par(mfrow=c(1,3))
+curve(c +( (a*exp(b*x))/(1+A*exp(b*x)) ), 0, 100, main="a) Force of mortality", ylab="mu(x)")
+k <- a/(A*b)
+curve(exp(-c*x -k*log((1+A*exp(b*x))/(1+A))),0,100, main="c) Survival function",ylab="l(x)")
+curve((c+((a*exp(b*x))/(1+A*exp(b*x)))) * (exp(-c*x -(a/(A*b))* log((1+A*exp(b*x))/(1+A)))),
+         ylim=c(0,0.045), main="c) Distribution of deaths",ylab="d(x)",0,100)
+```
+
+We now change $b=0.08$ (keeping $c=0.0001$, $a=0.0002$, $\alpha=0.0001$). The force of mortality becomes steeper at older ages, the survival curve is more rectangular and the distribution of deaths is more shifted to older ages.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+b <- 0.08
+c <- 0.0001
+a <- 0.0002
+A <- 0.0001
+
+# Force of mortality, Survival function, Distribution of deaths 
+par(mfrow=c(1,3))
+curve(c +( (a*exp(b*x))/(1+A*exp(b*x)) ), 0, 100, main="a) Force of mortality", ylab="mu(x)")
+legend("top", legend=c("b=0.08"), pch=20, cex=1)
+k <- a/(A*b)
+curve(exp(-c*x -k*log((1+A*exp(b*x))/(1+A))),0,100, main="c) Survival function",ylab="l(x)")
+legend("topright",legend=c("b=0.08"),pch=20,cex=1)
+curve((c+((a*exp(b*x))/(1+A*exp(b*x)))) * (exp(-c*x -(a/(A*b))* log((1+A*exp(b*x))/(1+A)))),
+         ylim=c(0,0.045), main="c) Distribution of deaths",ylab="d(x)",0,100)
+legend("topright",legend=c("b=0.08"),pch=20,cex=1)
+```
+
+An increase of $c$ to $0.005$ (keeping $b=0.12$, $a=0.0002$, $\alpha=0.0001$) produces an increase in the number of deaths at younger ages. The survival curve is then lower and the distribution of deaths higher until age 35.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+b <- 0.12
+c <- 0.005
+a <- 0.0002
+A <- 0.0001
+
+# Force of mortality, Survival function, Distribution of deaths 
+par(mfrow=c(1,3))
+curve(c +( (a*exp(b*x))/(1+A*exp(b*x)) ), 0, 100, main="a) Force of mortality", ylab="mu(x)")
+legend("top", legend=c("c=0.005"), pch=20, cex=1)
+k <- a/(A*b)
+curve(exp(-c*x -k*log((1+A*exp(b*x))/(1+A))),0,100, main="c) Survival function",ylab="l(x)")
+legend("topright",legend=c("c=0.005"),pch=20,cex=1)
+curve((c+((a*exp(b*x))/(1+A*exp(b*x)))) * (exp(-c*x -(a/(A*b))* log((1+A*exp(b*x))/(1+A)))),
+         ylim=c(0,0.045), main="c) Distribution of deaths",ylab="d(x)",0,100)
+legend("topright",legend=c("c=0.005"),pch=20,cex=1)
+```
+
+Finally, increasing $\alpha$ to $0.001$ (keeping $b=0.12$, $c=0.0001$, $a=0.0002$), more deaths seem to occurr at the middle ages and the distribution of deaths is wider around age 50.
+
+```{r echo=FALSE, fig.align='center', fig.width=8, fig.height=3}
+b <- 0.12
+c <- 0.0001
+a <- 0.0002
+A <- 0.001
+
+# Force of mortality, Survival function, Distribution of deaths 
+par(mfrow=c(1,3))
+curve(c +( (a*exp(b*x))/(1+A*exp(b*x)) ), 0, 100, main="a) Force of mortality", ylab="mu(x)")
+legend("top", legend=c("alpha=0.001"), pch=20, cex=1)
+k <- a/(A*b)
+curve(exp(-c*x -k*log((1+A*exp(b*x))/(1+A))),0,100, main="c) Survival function",ylab="l(x)")
+legend("topright",legend=c("alpha=0.001"),pch=20,cex=1)
+curve((c+((a*exp(b*x))/(1+A*exp(b*x)))) * (exp(-c*x -(a/(A*b))* log((1+A*exp(b*x))/(1+A)))),
+         ylim=c(0,0.045), main="c) Distribution of deaths",ylab="d(x)",0,100)
+legend("topright",legend=c("alpha=0.001"),pch=20,cex=1)
+```
+
+
+# Exercise 4
+
+A man aged 30 marries a woman aged 25. Express in symbols the expected number of years they will both be alive. If $\mu_x$ is constant and equal to $0.02$, evaluate the symbolic expression.
+
+[Sol.]
+
+The expected number of years they will both be alive can be obtained with the definition of the average given a distribution $f_{x}(t)$.
+
+$$e^{0}_{x}=\int_{0}^{\infty} t \cdot f_{x}(t) dt= \int_{0}^{\infty} t \cdot  _{t}p_{x} \mu_{x+t}=
+\int_{0}^{\infty} t \cdot \Bigg{[} -\frac{\partial p_{x}(t)}{\partial t} dt \Bigg{]}$$
+
+Using integration by parts we obtain
+
+$$\int_{0}^{\infty} t \cdot \Bigg{[} -\frac{\partial p_{x}(t)}{\partial t} dt \Bigg{]}= 
+t(-_{t}p_{x})\Big\rvert_{t=0}^{\infty}-\int_{0}^{\infty}-_{t}p_{x} dt$$
+
+Thus, the expected number of years is given by $e^{0}_{x}=\int_{0}^{\infty} {_{t}p_{x}}.$
+
+The joint probability of the man and the woman to live together is expressed ad the product of the two individual probabilities, as they are independent.
+
+$$_{t}p_{30:25}=_{t}p_{30} \cdot _{t}p_{25}$$
+
+Let's first express the generic probability $_{t}p_{x}$ for the man and the woman. From the definition of a probability between times $x$ and $x+t$ we obtain
+
+$$_{t}p_{x}=\frac{l_{x+t}}{l_{x}}=\frac{e^{-\int_{0}^{x+t}\mu(s)ds}}{e^{-\int_{0}^{x}\mu(s)ds}}=
+e^{-\int_{0}^{x+t}\mu(s)ds+\int_{0}^{x}\mu(s)ds}=e^{-\int_{x}^{x+t}\mu(s)ds}=e^{-\int_{0}^{t}\mu(x+s)ds}$$
+
+As $\mu$ is constant then $_{t}p_{x}=e^{-\mu t}$. Thus the joint probability becomes 
+
+$$_{t}p_{30:25}=e^{-\mu t} e^{-\mu t}=e^{-0.02 t} e^{-0.02 t}.$$
+
+Putting all together, the expected number of years that the man and the woman will be alive is 
+
+$$e^{0}_{x}=\int_{0}^{Inf}e^{-0.02 t} e^{-0.02 t}=25 \text{years}.$$
+
+Alternatively, we can consider the time they will be alive as a joint decrement process, because the risk of dying conjunctly are whether one dies first or the other. So what needs to be calculated is $e_{30:25}^o$. 
+
+On one hand we know that $e_x^o=\int_x^\infty \frac{l(x+n)}{l(x)dn}$ and $_np_x=\frac{l(x+n)}{l(x)} \therefore e_x^o=\int_0^\infty$$_tp_x dt$ and by definition, $_tp_x=e^{-\int_x^{x+n}\mu(a)da}$. 
+
+On the other hand, if we assume independence $_tp_{x:y}=_tp_x*_tp_y$. In this case, this is a convenient expression considering that the joint-life status survives if and only if both survive. Then:
+
+$$e_{30:25}^o=\int_0^\infty tp_{30:25}dt=\int_0^\infty tp_{30}\cdot_tp_{25}dt=\int_0^\infty e^{-\int_{30}^{30+t}\mu(a)da}\cdot e^{-\int_{25}^{25+t}\mu(a)da}$$
+
+$$=\int_0^\infty e^{0.02a|_{30}^{30+t}}\cdot e^{0.02a|_{25}^{25+t}}=\int_0^\infty e^{0.02(30+t-30)}\cdot e^{0.02(25+t-25)}$$
+
+$$=\int_0^\infty e^{-0.02t}\cdot e^{-0.02t}dt=\int_0^\infty e^{-0.04t}dt=\frac{e^{-0.04t}}{0.04}=25$$
+
+
+Therefore,
+
+the expected number of years each one in and independent way will  be alive is in average 50 years, however this time is 25 considering the joint expectancy.This is an empiric example that, when the mortality force remains constant the life expectancy is the same at every age, because there are not differences in the "way" people from age to age dies (or among sexes). This is an unrealistic scenario that can only happen if there is an homogenous population without biological aging or mortality risk sex/age/social differences.
+
+
+# References
+
+---
+nocite: '@*'
+---
+
