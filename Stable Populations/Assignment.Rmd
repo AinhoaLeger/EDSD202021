@@ -3,6 +3,7 @@ title: "Stable Populations Assignment"
 subtitle: "European Doctoral School of Demography 2021"
 author: |
   | Liliana Patricia Calderón Bernal
+  | Gonzalo Daniel Garcia
   | Ainhoa-Elena Leger
   | Ozge Elif Ozer
 date: "26/3/2021"
