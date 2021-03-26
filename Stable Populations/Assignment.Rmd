@@ -8,6 +8,7 @@ author: |
   | Ozge Elif Ozer
 date: "26/3/2021"
 output: pdf_document
+bibliography: caswell_ref.bib
 header-includes: 
   - \renewcommand{\and}{\\}
   - \usepackage{mathtools}
@@ -37,7 +38,7 @@ library(R.matlab)
 
 ## Exercise 1: Everybody loves penguins
 
-Here are two stage-classified matrices for the Emperor penguin. The life cycle diagram is given on the next-to-last page of the Jenouvrier et al. (2009) paper in the readings for the course. The first of these matrices was obtained
+Here are two stage-classified matrices for the Emperor penguin. The life cycle diagram is given on the next-to-last page of the [@jenouvrier2009demographic] paper in the readings for the course. The first of these matrices was obtained
 under normal conditions, the other during an unusual warm event during which the penguin population declined by about 50\%. 
 
 (a) Write a program to project the population (for what seems like an interesting length of time) starting from several different initial conditions:
@@ -82,7 +83,7 @@ U.pen1[1,7] <- 0
 
 ###### Calculating Fundamental Matrix N for both penguin Universes ###### 
 N.pen1 <- solve(diag(dim(U.pen1)[1]) - U.pen1)
-N.pen1
+#N.pen1
 ```
 
 
@@ -134,8 +135,8 @@ n.a.dat <- n.a.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "normal",
-         initial_pop = "a")
+         type_penguin = "Normal Conditions",
+         initial_pop = "One newborn baby penguin")
 
 # Initial population b #
 n.b.dat <- data.frame(n.b)
@@ -146,8 +147,8 @@ n.b.dat <- n.b.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "normal",
-         initial_pop = "b")
+         type_penguin = "Normal Conditions",
+         initial_pop = "One breeding adult penguin")
 
 # Initial population c #
 n.c.dat <- data.frame(n.c)
@@ -158,17 +159,9 @@ n.c.dat <- n.c.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "normal",
-         initial_pop = "c")
+         type_penguin = "Normal Conditions",
+         initial_pop = "Population with the stable stage distribution")
 
-
-# Plotting all together #
-
-penguins <- rbind(n.a.dat, n.b.dat, n.c.dat)
-
-penguins %>% 
-  ggplot(aes(x = t, y = n_t, color = stage)) + geom_line() +
-  facet_wrap(~ initial_pop)
 ```
 
 
@@ -258,8 +251,8 @@ n.a.2.dat <- n.a.2.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "stressed",
-         initial_pop = "a")
+         type_penguin = "Warm Conditions",
+         initial_pop = "One newborn baby penguin")
 
 # Initial population b #
 n.b.2.dat <- data.frame(n.b.2)
@@ -270,8 +263,8 @@ n.b.2.dat <- n.b.2.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "stressed",
-         initial_pop = "b")
+         type_penguin = "Warm Conditions",
+         initial_pop = "One breeding adult penguin")
 
 # Initial population c #
 n.c.2.dat <- data.frame(n.c.2)
@@ -282,10 +275,13 @@ n.c.2.dat <- n.c.2.dat %>%
   pivot_longer(cols = !stage, values_to = "n_t", names_to = "t") %>% 
   mutate(stage = as.factor(stage),
          t = as.numeric(t),
-         type_penguin = "stressed",
-         initial_pop = "c")
+         type_penguin = "Warm Conditions",
+         initial_pop = "Population with the stable stage distribution")
+```
 
+First we plot the distribution of each stage across time for the 3 different initial conditions and the 2 matrices:
 
+```{r distribution plot ex1}
 ####  Plotting all together ####
 
 penguins <- rbind(n.a.dat, n.b.dat, n.c.dat, n.a.2.dat, n.b.2.dat, n.c.2.dat)
@@ -294,10 +290,15 @@ penguins %>%
   ggplot(aes(x = t, y = n_t, color = stage)) + geom_line() +
   facet_wrap(~ initial_pop + type_penguin, ncol = 2)
 ```
+As was expected, the penguin population in Warm conditions has a declining population projection in the long run. Compared to the population under Normal conditions, the stage 7 population does not stabilize in warm conditions.
+
+Under Normal conditions, in both cases when we start with only newborns or when we start with a breeding adult penguin, the population stabilizes rather quickly around periods 5 and 10 (depending on each stage). What we found interesting about these populations is that under Normal conditions is the stage 5 the one that takes much longer to stabilize.
 
 
 
-```{r}
+We can also plot the full population for each temperature and initial condition. We are representing here the sum of all stages for each period:
+
+```{r population plot ex1}
 ####  Plotting Population ####
 
 penguins %>% 
@@ -307,6 +308,9 @@ penguins %>%
   facet_wrap(~ initial_pop + type_penguin, ncol = 2) 
   #scale_y_log10()
 ```
+In the next section we will see the population growth rates that are linked to the matrices we were provided, but already from this plot we can appreciate that the Warm conditions matrix is one such that population is declining in the long run. While for the Normal conditions matrix, the rate of growth under stable stage distribution is positive but very low.
+
+Another insight from the plots is that when the initial condition is the one where we have only newborns, then the population declines in the first periods until stabilizes (except when temperature conditions are warm).
 
 
 
@@ -315,10 +319,21 @@ penguins %>%
 
 [Sol.]
 
-```{r}
+For the matrix on Normal conditions we have the following results:
 
-```
+* Rate of growth: `r lambda1.pen1`
 
+* Stable Stage distribution: `r omega1.pen1`
+
+* Reproductive value distribution: `r ve1`
+
+And for the matrix on Warm conditions:
+
+* Rate of growth: `r lambda1.pen2`
+
+* Stable Stage distribution: `r omega1.pen2`
+
+* Reproductive value distribution: `r ve2`
 
 
 
@@ -327,7 +342,7 @@ penguins %>%
 
 In an airport in Belfast, I found a souveneir tea-towel, inscribed with a verse identified as "Irish philosophy". See the figure. It looks like an incidence-based health model to me.
 
-(a) Create a life cycl graph for this system, based on your interpretation of the verse.
+(a) Create a life cycle graph for this system, based on your interpretation of the verse.
 
 [Sol.]
 
@@ -374,4 +389,6 @@ Sweden has an unusually long sequence of mortality and fertility data. There are
 
 
 
+\pagebreak
 
+## References
