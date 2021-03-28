@@ -34,6 +34,7 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r}
 library(tidyverse)
 library(R.matlab)
+library(diagram)
 ```
 
 
@@ -104,9 +105,9 @@ c1.c <- as.vector(ve1 %*% n0.c)
 
 ####### Looping for X periods ####### 
 periods <- 25
-n.a <- matrix(,nrow=dim(U.pen1)[1],ncol=periods+1)
-n.b <- matrix(,nrow=dim(U.pen1)[1],ncol=periods+1)
-n.c <- matrix(,nrow=dim(U.pen1)[1],ncol=periods+1)
+n.a <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
+n.b <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
+n.c <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
 
 ####### Adding initial population #######
 n.a[,1] <- n0.a
@@ -289,7 +290,8 @@ penguins <- rbind(n.a.dat, n.b.dat, n.c.dat, n.a.2.dat, n.b.2.dat, n.c.2.dat)
 
 penguins %>% 
   ggplot(aes(x = t, y = n_t, color = stage)) + geom_line() +
-  facet_wrap(~ initial_pop + type_penguin, ncol = 2)
+  facet_wrap(~ initial_pop + type_penguin, ncol = 2) +
+  theme_bw() 
 ```
 As was expected, the penguin population in Warm conditions has a declining population projection in the long run. Compared to the population under Normal conditions, the stage 7 population does not stabilize in warm conditions.
 
@@ -306,9 +308,10 @@ penguins %>%
   group_by(type_penguin, initial_pop, t) %>% 
   summarise(pop = sum(n_t, na.rm=T)) %>% 
   ggplot(aes(x = t, y = pop * 100)) + geom_line() +
-  facet_wrap(~ initial_pop + type_penguin, ncol = 2) 
-  #scale_y_log10()
+  facet_wrap(~ initial_pop + type_penguin, ncol = 2) +
+  theme_bw() 
 ```
+
 In the next section we will see the population growth rates that are linked to the matrices we were provided, but already from this plot we can appreciate that the Warm conditions matrix is one such that population is declining in the long run. While for the Normal conditions matrix, the rate of growth under stable stage distribution is positive but very low.
 
 Another insight from the plots is that when the initial condition is the one where we have only newborns, then the population declines in the first periods until stabilizes (except when temperature conditions are warm).
@@ -344,68 +347,63 @@ And for the matrix on Warm conditions:
 In an airport in Belfast, I found a souveneir tea-towel, inscribed with a verse identified as "Irish philosophy". See the figure. It looks like an incidence-based health model to me.
 
 (a) Create a life cycle graph for this system, based on your interpretation of the verse.
-(b) Identify the transient and absorbing states.
-[Sol.]
-We make up the transition probabilities and plot the life cycle graph with them. In our life cycle, the individuals start as sick or well and then they can either change between these two states, or the sick ones can die. As it can be seen, similar to "Well" and "Sick", "Death" is a transient state. After death, people can go to hell or heaven. "Hell" and "Heaven" as it can be seen from the graph are two absorbing states.Therefore, at the end we have an absorbing Markov Chain. 
 
-install.packages("diagram")
-library(diagram)
-p11= 0.8
-p12= 0.4
-p13= 0
-p14= 0
-p15= 0
-p21= 0.2
-p22= 0
-p23= 0
-p24= 0
-p25= 0
-p31= 0
-p32= 0.6
-p33= 0
-p34= 0
-p35= 0
-p41= 0
-p42= 0
-p43= 0.8
-p44= 1
-p45= 0
-p51= 0
-p52= 0
-p53= 0.2
-p54= 0
-p55= 1
+```{r, fig.width = 6, fig.height = 6}
+p11= 0.8; p12= 0.4; p13= 0; p14= 0; p15= 0
+p21= 0.2; p22= 0; p23= 0; p24= 0; p25= 0
+p31= 0; p32= 0.6; p33= 0; p34= 0; p35= 0
+p41= 0; p42= 0; p43= 0.8; p44= 1; p45= 0
+p51= 0; p52= 0; p53= 0.2; p54= 0; p55= 1
 
 Prob_matrix <- matrix( c(p11, p12, p13, p14, p15,
-               p21, p22, p23, p24, p25,
-               p31, p32, p33, p34, p35,
-               p41, p42, p43, p44, p45,
-               p51, p52, p53, p54, p55), nrow=5, byrow=TRUE)
-rownames(Prob_matrix) <- colnames(Prob_matrix) <- c("Well", "Sick","Death", "Hell", "Heaven")
+                         p21, p22, p23, p24, p25,
+                         p31, p32, p33, p34, p35,
+                         p41, p42, p43, p44, p45,
+                         p51, p52, p53, p54, p55), nrow=5, byrow=TRUE)
+rownames(Prob_matrix) <- colnames(Prob_matrix) <- 
+  c("Well", "Sick","Death", "Hell", "Heaven")
+
+par(mar=c(1,1,1,1))
+pos <- cbind (c(0.1,0.35,0.6,0.85,0.85), c(0.5,0.5,0.5,0.3,0.6))
 set.seed(1)
-plotmat(Prob_matrix, 5, curve=c(2))
+plotmat(Prob_matrix, pos=pos, curve=c(0.2), box.size=0.07)
+```
+
+
+(b) Identify the transient and absorbing states.
+
+[Sol.]
+
+We make up the transition probabilities and plot the life cycle graph with them. In our life cycle, the individuals start as sick or well and then they can either change between these two states, or the sick ones can die. As it can be seen, similar to "Well" and "Sick", "Death" is a transient state. After death, people can go to hell or heaven. "Hell" and "Heaven" as it can be seen from the graph are two absorbing states.Therefore, at the end we have an absorbing Markov Chain. 
 
 (c) Make up some transition probabilities (your choice) and calculate mean occupancy times and the probabilities of ending up in Heaven or Hell.
 
 [Sol.]
-# Transition probabilities 
+
+### Transition probabilities 
 We included these in the probability matrix from the previous question.  
 
-# Mean occupancy time 
+### Mean occupancy time 
 Since this is an absorbing Markov chain with two absorbing states at the end of the lifecycle, we need to extract the transient matrix and mortality vector. We can calculate these with the transition probabilities matrix that we used for the Markov chain earlier. 
 
+```{r}
 P = as(Prob_matrix, "matrix")
 U = Prob_matrix[1:3, 1:3]
 M = Prob_matrix[4:5, 1:3]
+```
 
 Following the formulae for calculating the fundamental matrix, N, we end up with the a matrix that shows mean occupancy times at each stage. 
 
+```{r}
 N <- solve(diag(dim(U)[1]) - U)
+```
 
 By looking at this matrix, we can see that if your initial state is well, you can revisit this state 8.33 times on average, and this number is 3.33 for people whose initial state is sickness. For instance, death is a stage that can be visited only once.
 To calculate the probability of ending up in heaven or hell, we can make rows with the transient states, and columns with the absorbing states as follow;
 
+```{r}
 N%*%t(M)
+```
 
 
 
@@ -415,15 +413,92 @@ N%*%t(M)
 
 Sweden has an unusually long sequence of mortality and fertility data. There are two text files (\texttt{parray.txt} and \texttt{fertarray.txt}) in the Calculation Materials folder. One has survival probabilities as a function of age, the other has fertility as a function of age; one column for each year from 1891 to 2007.
 
+```{r}
+#### Import data 
+setwd("C:\\Users\\Ainhoa\\Desktop\\20 - Stable Populations\\4 - Assignment")
+fert <- as.matrix(read.table("fertarray.txt"))
+surv <- as.matrix(read.table("parray.txt"))
+```
+
+
 (a) Write a program to use this information to create an age-classified projection matrix \textbf{A} for each year.
 
 [Sol.]
+
+We created a list of 117 elements collecting annual $\mathbf{A}$ matrices. Each $\mathbf{A}$ matricx has fertility in the first row, survival probabilities on the subdiagonal.
+
+```{r, echo = TRUE}
+# Grab number of years 
+years <- c(1891:2007)
+nby <- length(years)
+
+# Initialize the list with annual A matrices as elements
+A.y <- replicate(nby, diag(111), simplify=F)
+
+for (i in 1:nby) {
+  
+  ## Extract each year survival and fertility
+  surv.y <- surv[,i]
+  fert.y <- fert[,i]
+  
+  ## Creating matrix A with  
+  A <- diag(surv.y)
+  A <- cbind(A,rep(0,111))
+  A <- rbind(t(fert.y), A)
+  
+  ## Saving A in the list
+  A.y[[i]] <- A
+  
+}
+```
+
 
 
 (b) Compute the population growth rate $\lambda_{1}$ and the corresponding right and left eigenvectors \textbf{w1} and \textbf{v1} for each year.
 
 [Sol.]
 
+```{r}
+# Initialize vectors and matrices
+A.eigen <- matrix(NA, 112, nby)
+lambda1.position <- rep(0, nby)
+lambda1 <- rep(0, nby)
+omega1 <- matrix(0, 112, nby)
+v1 <- matrix(0, 112, nby)
+
+for(i in 1:nby) {
+  
+  ## Extract eigen-values (lambdas)
+  A.eigen[,i] <- eigen(A.y[[i]])$values
+  
+  ## Population growth rate (dominant eigenvalue, lambda1)
+  ## (Perron-Frobenius' theorem)
+  lambda1.position[i] <- which.max(abs(A.eigen[,i]))
+  lambda1[i] <- A.eigen[lambda1.position[i],i]
+  
+  ## Stable population vector (right eigenvector)
+  omega1[,i] <- eigen(A.y[[i]])$vectors[,lambda1.position[i]]
+  
+  ## Reproductive value (left eigenvector)
+  v1[,i] <- eigen(t(A.y[[i]]))$vectors[,lambda1.position[i]]
+  
+}
+```
+
+We plotted the $\lambda$ values over time.
+
+```{r, fig.weight=2, fig.height=4}
+years <- c(1891:2007)
+db_lambda <- data.frame(Year=years, Lambda=as.numeric(lambda1))
+
+db_lambda %>%
+  ggplot(aes(x=Year, y=Lambda)) + 
+  theme_bw() +
+  geom_line()
+
+# dim(omega1)
+# dim(v1)
+```
 
 
 (c) This is a lot of information. To summarize the population structure, compute and plot the early-age dependency ratio and the old-age dependency ratio calculated from \textbf{w}.  
@@ -432,6 +507,41 @@ Sweden has an unusually long sequence of mortality and fertility data. There are
 
 [Sol.]
 
+```{r, fig.width = 8, fig.height = 4}
+sdy <- rep(0, nby)
+sdo <- rep(0, nby)
+sp <- rep(0, nby)
+early_dr <- rep(0, nby)
+old_dr <- rep(0, nby)
+
+for(i in 1:nby) {
+
+  ## Sum of population numbers
+  # "young dependent" ages (0-15)
+  sdy[i] <- as.numeric(sum(omega1[c(1:16),i]))
+  # "old dependent" ages (65+)
+  sdo[i] <- as.numeric(sum(omega1[c(67:112),i]))
+  # "productive" ages (15-65+)
+  sp[i] <- as.numeric(sum(omega1[c(17:66),i]))
+  
+  ## Early-age dependency ratio
+  early_dr[i] <- sdy[i]/sp[i]
+  
+  ## Old-age dependency ratio
+  old_dr[i] <- sdo[i]/sp[i]
+
+}
+
+years <- c(1891:2007)
+age_ratios <- data.frame(Year=years, Early=early_dr, Old=old_dr)
+
+age_ratios %>%
+  pivot_longer(cols= Early:Old, names_to="Age", values_to="Ratio") %>% 
+  ggplot(aes(x=Year, y=Ratio)) + 
+  theme_bw() +
+  facet_grid(~Age) +
+  geom_line()
+```
 
 
 
