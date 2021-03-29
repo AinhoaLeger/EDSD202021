@@ -46,7 +46,7 @@ Here are two stage-classified matrices for the Emperor penguin. The life cycle d
 > \textbf{n}(0) $=$ one breeding adult penguin  
 > \textbf{n}(0) $=$ a population with the stable stage distribution
 
-Plot the results (plotting on a log scale will probably be particularly informative). Compare the fates of the population under the two different environmental conditions.
+Plot the results. Compare the fates of the population under the two different environmental conditions.
 
 [Sol.]  
 
