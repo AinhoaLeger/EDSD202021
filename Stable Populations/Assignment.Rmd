@@ -309,7 +309,7 @@ And for the matrix on Warm conditions:
 
 * Reproductive value distribution: `r ve1.pen2`
 
-We can plot the full population for each temperature and initial condition. We are representing here the sum of all stages for each period:
+We can plot the full population for each temperature and initial condition. This is the sum of the populations in all stages for each period (computed in 1(a)):
 
 ```{r population plot ex1, fig.width = 8, fig.height = 9.3}
 ####  Plotting Population ####
@@ -335,7 +335,7 @@ In an airport in Belfast, I found a souveneir tea-towel, inscribed with a verse 
 
 (a) Create a life cycle graph for this system, based on your interpretation of the verse.
 
-```{r, fig.width = 5, fig.height = 5}
+```{r, fig.width = 4, fig.height = 4}
 p11= 0.8; p12= 0.4; p13= 0; p14= 0; p15= 0
 p21= 0.2; p22= 0; p23= 0; p24= 0; p25= 0
 p31= 0; p32= 0.6; p33= 0; p34= 0; p35= 0
@@ -361,17 +361,21 @@ plotmat(Prob_matrix, pos=pos, curve=c(0.2), box.size=0.07)
 
 [Sol.]
 
-We make up the transition probabilities and plot the life cycle graph with them. In our life cycle, the individuals start as sick or well and then they can either change between these two states, or the sick ones can die. As it can be seen, similar to "Well" and "Sick", "Death" is a transient state. After death, people can go to hell or heaven. "Hell" and "Heaven" as it can be seen from the graph are two absorbing states.Therefore, at the end we have an absorbing Markov Chain. 
+We make up the transition probabilities and plot the life cycle graph with them. In our life cycle, the individuals start as sick or well and then they can either change between these two states, or the sick ones can die. As it can be seen, similar to "Well" and "Sick", "Death" is a transient state. After death, people can go to hell or heaven. "Hell" and "Heaven" as it can be seen from the graph are two absorbing states. Therefore, at the end we have an absorbing Markov Chain. 
 
 (c) Make up some transition probabilities (your choice) and calculate mean occupancy times and the probabilities of ending up in Heaven or Hell.
 
 [Sol.]
 
 ### Transition probabilities 
-We included these in the probability matrix from the previous question.  
-
+We included these in the probability matrix from the previous question. The transition matrix $\mathbf{P}$ is then  
+  
+```{r}
+Prob_matrix
+```
+  
 ### Mean occupancy time 
-Since this is an absorbing Markov chain with two absorbing states at the end of the lifecycle, we need to extract the transient matrix and mortality vector. We can calculate these with the transition probabilities matrix that we used for the Markov chain earlier. 
+Since this is an absorbing Markov chain with two absorbing states at the end of the life cycle, we need to extract the transient matrix $\mathbf{U}$ and the mortality matrix $\mathbf{M}$. We can calculate these from the transition probabilities matrix $\mathbf{P}$ that we used for the Markov chain earlier. 
 
 ```{r}
 P = as(Prob_matrix, "matrix")
@@ -379,7 +383,7 @@ U = Prob_matrix[1:3, 1:3]
 M = Prob_matrix[4:5, 1:3]
 ```
 
-Following the formulae for calculating the fundamental matrix, N, we end up with the a matrix that shows mean occupancy times at each stage. 
+Following the formulae for calculating the fundamental matrix, $\mathbf{N}$, we end up with the matrix that shows mean occupancy times at each stage. 
 
 ```{r}
 N <- solve(diag(dim(U)[1]) - U)
@@ -387,13 +391,13 @@ N
 ```
 
 By looking at this matrix, we can see that if your initial state is well, you can revisit this state 8.33 times on average, and this number is 3.33 for people whose initial state is sickness. For instance, death is a stage that can be visited only once.
-To calculate the probability of ending up in heaven or hell, we can make rows with the transient states, and columns with the absorbing states as follow;
+
+### Probabilities of ending up in Heaven or Hell
+To calculate the probability of ending up in heaven or hell, we can make rows with the transient states, and columns with the absorbing states as follow.
 
 ```{r}
 N%*%t(M)
 ```
-
-
 
 
 
