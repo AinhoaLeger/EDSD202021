@@ -6,7 +6,7 @@ author: |
   | Gonzalo Daniel Garcia
   | Ainhoa-Elena Leger
   | Ozge Elif Ozer
-date: "26/3/2021"
+date: "29/3/2021"
 output: pdf_document
 bibliography: caswell_ref.bib
 header-includes: 
@@ -25,8 +25,6 @@ knitr::opts_chunk$set(echo = FALSE,
                       comment = NA,
                       message = FALSE,
                       include = TRUE,
-                      fig.width = 8,
-                      fig.height = 8,
                       fig.align = 'center')
 ```
 
@@ -38,10 +36,9 @@ library(diagram)
 ```
 
 
-## Exercise 1: Everybody loves penguins
+# Exercise 1: Everybody loves penguins
 
-Here are two stage-classified matrices for the Emperor penguin. The life cycle diagram is given on the next-to-last page of the [@jenouvrier2009demographic] paper in the readings for the course. The first of these matrices was obtained
-under normal conditions, the other during an unusual warm event during which the penguin population declined by about 50\%. 
+Here are two stage-classified matrices for the Emperor penguin. The life cycle diagram is given on the next-to-last page of the @jenouvrier2009demographic paper in the readings for the course. The first of these matrices was obtained under normal conditions, the other during an unusual warm event during which the penguin population declined by about 50\%. 
 
 (a) Write a program to project the population (for what seems like an interesting length of time) starting from several different initial conditions:
 
@@ -51,14 +48,26 @@ under normal conditions, the other during an unusual warm event during which the
 
 Plot the results (plotting on a log scale will probably be particularly informative). Compare the fates of the population under the two different environmental conditions.
 
-[Sol.]
+[Sol.]  
 
 ```{r}
-setwd("C:\\Users\\Ainhoa\\Desktop\\20 - Stable Populations\\4 - Assignment")
 pen1 <- as.matrix(read.table("penguinmat1.txt"))
 pen2 <- as.matrix(read.table("penguinmat2.txt"))
 ```
 
+We projected the following populations into the future:
+
+> $\mathbf{n(0)} = [1,0,0,0,0,0]$  
+> $\mathbf{n(0)} = [0,0,0,0,0,1]$  
+> $\mathbf{n(0)} = \mathbf{w}_{1}$ (i.e the right eigenvector corresponding to the dominant eigenvalue of the transition matrix) standardized to represent population proportions at all stages.
+
+To this aim, we ‘matrix-multiply’ the vectors by the transition matrix $\mathbf{A}$ under the two different environmental conditions. We can use this strategy to project the resulting populations forward again. Each time we do the multiplication step, we advance one year. The matrix population growth equation is 
+
+\begin{equation*}
+\mathbf{n}_{t+1} = \mathbf{A} \mathbf{n}_{t}.
+\end{equation*}
+
+We used the following code to project the populations 25 years forward.
 
 ```{r}
 ##### Normal Population: penguinmat1.txt #####
@@ -88,42 +97,36 @@ N.pen1 <- solve(diag(dim(U.pen1)[1]) - U.pen1)
 #N.pen1
 ```
 
+```{r, echo=TRUE}
+###### Population projection for the next 25 years under Normal Conditions ###### 
 
-
-```{r}
-###### Population projection ###### 
-
-####### Setting initial population in t = 0 ####### 
+# Setting initial population in t = 0 
 n0.a <- as.vector(c(1,0,0,0,0,0,0))
 n0.b <- as.vector(c(0,0,0,0,0,0,1))
 n0.c <- omega1.pen1.stand
 
-####### Calculating C vector ####### 
-c1.a <- as.vector(ve1 %*% n0.a)
-c1.b <- as.vector(ve1 %*% n0.b)
-c1.c <- as.vector(ve1 %*% n0.c)
-
-####### Looping for X periods ####### 
+# Preparing the matrix to collect projections over 25 years
 periods <- 25
 n.a <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
 n.b <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
 n.c <- matrix(NA,nrow=dim(U.pen1)[1],ncol=periods+1)
 
-####### Adding initial population #######
+# Adding initial population to the matrix
 n.a[,1] <- n0.a
 n.b[,1] <- n0.b
 n.c[,1] <- n0.c
 
-####### Looping #######
-for (t in 1:periods) {
+### LOOP FOR POPULATION PROJECTION
+for (t in 1:periods) { # use 't' as our looping variable
   
+  ## Perform matrix multiplication for each year
+  ## pen1 is matrix A under Normal Conditions
   n.a[,t+1] <- pen1 %*% n.a[,t]
   n.b[,t+1] <- pen1 %*% n.b[,t]
   n.c[,t+1] <- pen1 %*% n.c[,t]
   
 }
 ```
-
 
 ```{r}
 ###### Re-arranging projections ######
@@ -168,7 +171,6 @@ n.c.dat <- n.c.dat %>%
 
 
 
-
 ```{r}
 ##### Stressed Population: penguinmat2.txt #####
 
@@ -193,53 +195,40 @@ ve1.pen2 <- eigen(t(pen2))$vectors[,lambda1.position.pen2]
 U.pen2 <- pen2
 U.pen2[1,7] <- 0
 
-
 ###### Calculating Fundamental Matrix N for both penguin Universes ###### 
-
 N.pen2 <- solve(diag(dim(U.pen2)[1]) - U.pen2)
 ```
 
+```{r, echo=TRUE}
+###### Population projection for the next 25 years under Warm Conditions ###### 
 
-
-
-```{r}
-###### Population projection ###### 
-
-####### Setting initial population in t = 0 ####### 
+# Setting initial population in t = 0
 n0.a.2 <- as.vector(c(1,0,0,0,0,0,0))
 n0.b.2 <- as.vector(c(0,0,0,0,0,0,1))
 n0.c.2 <- omega1.pen2.stand
 
-
-####### Calculating C vector ####### 
-c1.a.2 <- as.vector(ve1.pen2 %*% n0.a.2)
-c1.b.2 <- as.vector(ve1.pen2 %*% n0.b.2)
-c1.c.2 <- as.vector(ve1.pen2 %*% n0.c.2)
-
-
-####### Looping for X periods ####### 
+# Preparing the matrix to collect projections over 25 years
 periods <- 25
-n.a.2 <- matrix(,nrow=dim(U.pen2)[1],ncol=periods+1)
-n.b.2 <- matrix(,nrow=dim(U.pen2)[1],ncol=periods+1)
-n.c.2 <- matrix(,nrow=dim(U.pen2)[1],ncol=periods+1)
+n.a.2 <- matrix(NA,nrow=dim(U.pen2)[1],ncol=periods+1)
+n.b.2 <- matrix(NA,nrow=dim(U.pen2)[1],ncol=periods+1)
+n.c.2 <- matrix(NA,nrow=dim(U.pen2)[1],ncol=periods+1)
 
-####### Adding initial population #######
+# Adding initial population to the matrix
 n.a.2[,1] <- n0.a.2
 n.b.2[,1] <- n0.b.2
 n.c.2[,1] <- n0.c.2
 
-####### Looping #######
-for (t in 1:periods) {
+### LOOP FOR POPULATION PROJECTION
+for (t in 1:periods) { # use 't' as our looping variable
   
+  ## Perform matrix multiplication for each year
+  ## pen2 is matrix A under Warm Conditions
   n.a.2[,t+1] <- pen2 %*% n.a.2[,t]
   n.b.2[,t+1] <- pen2 %*% n.b.2[,t]
   n.c.2[,t+1] <- pen2 %*% n.c.2[,t]
   
 }
 ```
-
-
-
 
 ```{r}
 ###### Re-arranging projections ######
@@ -281,9 +270,10 @@ n.c.2.dat <- n.c.2.dat %>%
          initial_pop = "Population with the stable stage distribution")
 ```
 
+
 First we plot the distribution of each stage across time for the 3 different initial conditions and the 2 matrices:
 
-```{r distribution plot ex1}
+```{r distribution plot ex1, fig.width = 8, fig.height = 9.3}
 ####  Plotting all together ####
 
 penguins <- rbind(n.a.dat, n.b.dat, n.c.dat, n.a.2.dat, n.b.2.dat, n.c.2.dat)
@@ -293,30 +283,10 @@ penguins %>%
   facet_wrap(~ initial_pop + type_penguin, ncol = 2) +
   theme_bw() 
 ```
+
 As was expected, the penguin population in Warm conditions has a declining population projection in the long run. Compared to the population under Normal conditions, the stage 7 population does not stabilize in warm conditions.
 
 Under Normal conditions, in both cases when we start with only newborns or when we start with a breeding adult penguin, the population stabilizes rather quickly around periods 5 and 10 (depending on each stage). What we found interesting about these populations is that under Normal conditions is the stage 5 the one that takes much longer to stabilize.
-
-
-
-We can also plot the full population for each temperature and initial condition. We are representing here the sum of all stages for each period:
-
-```{r population plot ex1}
-####  Plotting Population ####
-
-penguins %>% 
-  group_by(type_penguin, initial_pop, t) %>% 
-  summarise(pop = sum(n_t, na.rm=T)) %>% 
-  ggplot(aes(x = t, y = pop * 100)) + geom_line() +
-  facet_wrap(~ initial_pop + type_penguin, ncol = 2) +
-  theme_bw() 
-```
-
-In the next section we will see the population growth rates that are linked to the matrices we were provided, but already from this plot we can appreciate that the Warm conditions matrix is one such that population is declining in the long run. While for the Normal conditions matrix, the rate of growth under stable stage distribution is positive but very low.
-
-Another insight from the plots is that when the initial condition is the one where we have only newborns, then the population declines in the first periods until stabilizes (except when temperature conditions are warm).
-
-
 
 
 (b) Find the population growth rate $\lambda$, the stable stage distribution \textbf{w}, and the reproductive value distribution v for each matrix. Make some plots; make some comparisons.
@@ -339,10 +309,27 @@ And for the matrix on Warm conditions:
 
 * Reproductive value distribution: `r ve1.pen2`
 
+We can plot the full population for each temperature and initial condition. We are representing here the sum of all stages for each period:
+
+```{r population plot ex1, fig.width = 8, fig.height = 9.3}
+####  Plotting Population ####
+
+penguins %>% 
+  group_by(type_penguin, initial_pop, t) %>% 
+  summarise(pop = sum(n_t, na.rm=T)) %>% 
+  ggplot(aes(x = t, y = pop * 100)) + geom_line() +
+  facet_wrap(~ initial_pop + type_penguin, ncol = 2) +
+  theme_bw() 
+```
+
+From this plot we can appreciate that the Warm conditions matrix is one such that population is declining in the long run ($`r lambda1.pen2` < 1$). While for the Normal conditions matrix, the rate of growth under stable stage distribution is greater than 1 but very low.
+
+Another insight from the plots is that when the initial condition is the one where we have only newborns, then the population declines in the first periods until stabilizes (except when temperature conditions are warm).
 
 
 
-## Exercise 2: The Irish tea-towel problem
+
+# Exercise 2: The Irish tea-towel problem
 
 In an airport in Belfast, I found a souveneir tea-towel, inscribed with a verse identified as "Irish philosophy". See the figure. It looks like an incidence-based health model to me.
 
@@ -409,13 +396,12 @@ N%*%t(M)
 
 
 
-## Exercise 3: An extra problem about Sweden
+# Exercise 3: An extra problem about Sweden
 
 Sweden has an unusually long sequence of mortality and fertility data. There are two text files (\texttt{parray.txt} and \texttt{fertarray.txt}) in the Calculation Materials folder. One has survival probabilities as a function of age, the other has fertility as a function of age; one column for each year from 1891 to 2007.
 
 ```{r}
 #### Import data 
-setwd("C:\\Users\\Ainhoa\\Desktop\\20 - Stable Populations\\4 - Assignment")
 fert <- as.matrix(read.table("fertarray.txt"))
 surv <- as.matrix(read.table("parray.txt"))
 ```
@@ -425,7 +411,7 @@ surv <- as.matrix(read.table("parray.txt"))
 
 [Sol.]
 
-We created a list of 117 elements collecting annual $\mathbf{A}$ matrices. Each $\mathbf{A}$ matricx has fertility in the first row, survival probabilities on the subdiagonal.
+We created a list \texttt{A.y} collecting annual age-classified projection matrices $\mathbf{A}$, consisting of fertility in the first row and survival probabilities on the subdiagonal. In total, the list contains 117 elements corresponding to the years of the time period considered.
 
 ```{r, echo = TRUE}
 # Grab number of years 
@@ -435,16 +421,18 @@ nby <- length(years)
 # Initialize the list with annual A matrices as elements
 A.y <- replicate(nby, diag(111), simplify=F)
 
-for (i in 1:nby) {
+### LOOP FOR ANNUAL AGE-CLASSIFIED PROJECTION MATRIX
+for (i in 1:nby) { # use 't' as our looping variable
   
   ## Extract each year survival and fertility
   surv.y <- surv[,i]
   fert.y <- fert[,i]
   
-  ## Creating matrix A with  
+  ## Creating matrix A for year i  
+  # survival probabilities
   A <- diag(surv.y)
-  A <- cbind(A,rep(0,111))
-  A <- rbind(t(fert.y), A)
+  # fertility
+  A <- rbind(t(fert.y), cbind(A,rep(0,111)))
   
   ## Saving A in the list
   A.y[[i]] <- A
@@ -453,59 +441,52 @@ for (i in 1:nby) {
 ```
 
 
-
-(b) Compute the population growth rate $\lambda_{1}$ and the corresponding right and left eigenvectors \textbf{w1} and \textbf{v1} for each year.
+(b) Compute the population growth rate $\lambda_{1}$ and the corresponding right and left eigenvectors $\mathbf{w1}$ and $\mathbf{v1}$ for each year.
 
 [Sol.]
 
-```{r}
-# Initialize vectors and matrices
+From the previously created list \texttt{A.y} we extracted for every year the population growth rate $\lambda_{1}$, the stable stage distribution $\mathbf{w1}$ and the reproductive values $\mathbf{v1}$. The $\lambda_{1}$ values are saved in a vector \texttt{lambda1} (length 117), the vectors $\mathbf{w1}$ in a matrix \texttt{omega1} (dimension 112x117) and the $\mathbf{v1}$ in a matrix \texttt{v1} (dimension 112x117). 
+
+```{r, echo = TRUE}
+# Initialize vectors and matrices to use in the loop
 A.eigen <- matrix(NA, 112, nby)
 lambda1.position <- rep(0, nby)
 lambda1 <- rep(0, nby)
 omega1 <- matrix(0, 112, nby)
 v1 <- matrix(0, 112, nby)
 
-for(i in 1:nby) {
+### LOOP FOR ANNUAL EIGENVALUES, LEFT AND RIGHT EIGENVECTORS
+for(i in 1:nby) { # use 't' as our looping variable
   
-  ## Extract eigen-values (lambdas)
+  ## POPULATION GROWTH RATE (dominant eigenvalue)
+  # Extract eigen-values (lambdas) from A for every year
   A.eigen[,i] <- eigen(A.y[[i]])$values
-  
-  ## Population growth rate (dominant eigenvalue, lambda1)
-  ## (Perron-Frobenius' theorem)
+  # Find the one that checks Perron-Frobenius
   lambda1.position[i] <- which.max(abs(A.eigen[,i]))
+  # Keep the dominant eigenvalue, lambda1
   lambda1[i] <- A.eigen[lambda1.position[i],i]
   
-  ## Stable population vector (right eigenvector)
+  ## STABLE POPULATION VECTOR (right eigenvector)
   omega1[,i] <- eigen(A.y[[i]])$vectors[,lambda1.position[i]]
   
-  ## Reproductive value (left eigenvector)
+  ## REPRODUCTIVE VALUE (left eigenvector)
   v1[,i] <- eigen(t(A.y[[i]]))$vectors[,lambda1.position[i]]
   
 }
-```
 
-We plotted the $\lambda$ values over time.
-
-```{r, fig.weight=4, fig.height=4}
-years <- c(1891:2007)
-db_lambda <- data.frame(Year=years, Lambda=as.numeric(lambda1))
-
-db_lambda %>%
-  ggplot(aes(x=Year, y=Lambda)) + 
-  theme_bw() +
-  geom_line()
-
-# dim(omega1)
-# dim(v1)
+length(lambda1)
+dim(omega1)
+dim(v1)
 ```
 
 
 (c) This is a lot of information. To summarize the population structure, compute and plot the early-age dependency ratio and the old-age dependency ratio calculated from \textbf{w}.  
 
-[The dependency ratio is the ratio of population numbers during ``dependent" ages (0-15 and older than 65) to the numbers in ``productive" years (16-65). The early age and late age ratios just look at those portions of the dependent population. ]
+[The dependency ratio is the ratio of population numbers during dependent ages (0-15 and older than 65) to the numbers in productive years (16-65). The early age and late age ratios just look at those portions of the dependent population. ]
 
 [Sol.]
+
+The decreasing early-age dependency ratio and the increasing old-age dependency ratio show that more people are moving out of the working age range than into it. In 1981, the early-age dependency ratio was 60 youth for every 100 working-age people. This dropped to 30 youth in 2007. The opposite trend is evident for seniors. For every 100 working-age people, there were 10 seniors in 1981 and 40 in 2007. However, the trends are very wiggly and would need some smoothing. So one should be careful in interpreting variations in the short term.
 
 ```{r, fig.width = 8, fig.height = 4}
 sdy <- rep(0, nby)
@@ -525,10 +506,10 @@ for(i in 1:nby) {
   sp[i] <- as.numeric(sum(omega1[c(17:66),i]))
   
   ## Early-age dependency ratio
-  early_dr[i] <- sdy[i]/sp[i]
+  early_dr[i] <- (sdy[i]/sp[i])*100
   
   ## Old-age dependency ratio
-  old_dr[i] <- sdo[i]/sp[i]
+  old_dr[i] <- (sdo[i]/sp[i])*100
 
 }
 
@@ -540,14 +521,13 @@ age_ratios %>%
   ggplot(aes(x=Year, y=Ratio)) + 
   theme_bw() +
   facet_grid(~Age) +
-  geom_line()
+  geom_line() +
+  ylim(0, 80)
 ```
 
 
 
-
-
-
-\pagebreak
-
 ## References
+
+
+
