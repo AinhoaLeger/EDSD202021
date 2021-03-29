@@ -396,6 +396,7 @@ Following the formulae for calculating the fundamental matrix, N, we end up with
 
 ```{r}
 N <- solve(diag(dim(U)[1]) - U)
+N
 ```
 
 By looking at this matrix, we can see that if your initial state is well, you can revisit this state 8.33 times on average, and this number is 3.33 for people whose initial state is sickness. For instance, death is a stage that can be visited only once.
