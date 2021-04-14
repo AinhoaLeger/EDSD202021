@@ -133,10 +133,6 @@ par(mfrow=c(2,1))
 seqfplot(seqObj2, idxs=1:5, main="5 most frequent sequences", 
          with.legend=TRUE, border=NA,
          ylab=NA, xlab="Time (months)", xtlab=xtlab)
-
-# 52% of the people live 5 sequences
-# The majority remains single 6 months after the separation
-# The two most frequent sequences correspond to people who stay single with or without children
 ```
 
 6) Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime? 
@@ -147,13 +143,6 @@ seqfplot(seqObj2, idxs=1:5, main="5 most frequent sequences",
 seqdplot(seqObj2, group=data2$BIRTHCOH, with.legend=TRUE, 
          main= "State distribution. Cohort", use.layout=FALSE, 
          border=NA, xtlab=xtlab, ylab=NA, xlab="Time (months)")
-
-# Cohort 1 is characterized by a lower number of people who are single and 
-# childless just after the separation, the state remains stagnant in the 
-# following months
-# For the other cohorts, there are more respondents who are single and 
-# childless but they are less likely to remain in this state, and enter a 
-# new union and have children after the separation
 ```
 
 7) What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
@@ -164,10 +153,6 @@ seqdplot(seqObj2, group=data2$BIRTHCOH, with.legend=TRUE,
 par(mfrow=c(1,1))
 seqmsplot(seqObj2, with.legend=TRUE, main="Modal states", 
           xtlab=xtlab, ylab=NA, xlab="Time (months)")
-
-# Before 4.5 months the most frequent state is single and childless
-# After 4.5 months the most frequent state is single and with a children
-# before separation
 ```
 
 8) Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
@@ -178,8 +163,6 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
 # Plot the transversal entropies in each position of the sequence
 seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies", 
           use.layout=FALSE, border=NA,xtlab=xtlab, ylab=NA, xlab="Time (months)")
-# The diversity between states keep increasing and reaches its maximum 
-# 5 years after separation
 ```
 
 9) Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
@@ -203,9 +186,6 @@ seqmsplot(seqObj2, with.legend=FALSE, main="Modal states", xtlab=xtlab,
 
 ```{r}
 seqtrate(seqObj2)
-
-# SNP -> UNP
-# People who are single have more chances to become in union
 ```
 
 11) Compute the sequence length, the number of transitions, the number of subsequences and the longitudinal entropy
