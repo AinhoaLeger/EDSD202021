@@ -231,8 +231,6 @@ summary(entropy)
 [Sol.]
 
 
-[Sol.]
-
 
 ## References
 
