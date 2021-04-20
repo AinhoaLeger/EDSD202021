@@ -102,9 +102,14 @@ names(seqObj2)
 
 [Sol.]
 
+Extended form:
 ```{r}
 #display the first 5 sequences, and sequence elements 1-20 (STS format - default).
 print(seqObj2[1:10, ], format ="STS")
+```
+
+Compact form:
+```{r}
 #display the first 5 sequences, and sequence elements 1-20 (SPS format)
 print(seqObj2[1:10, ], format ="SPS")
 ```
@@ -145,6 +150,12 @@ seqdplot(seqObj2, group=data2$BIRTHCOH, with.legend=TRUE,
          border=NA, xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
+From the plot we can observe that cohort 3 has the biggest proportion of childless status, for both Single and Union types.
+
+If cohorts 1 to 3 follow a time disposition, we can observe that more recent cohorts have higher proportions of children after separations. We can infer that more recent cohorts not only are more prone to not having children, but also are more prone of having children even after the couple dissolutes.
+
+
+
 7) What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
 
 [Sol.]
@@ -155,6 +166,12 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
           xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
+As can be seen, "Single, child b/separat." is the more frequent state after month 4. Before that, "Single, childless" is the frequent one.
+
+This behavior was observable in the plot from the previuos question, but we have to remark that these frequent states are going to be different for each cohort.
+
+
+
 8) Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
 
 [Sol.]
@@ -164,6 +181,9 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
 seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies", 
           use.layout=FALSE, border=NA,xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
+
+The plot shows that the entropy measure keeps increasing with time, having the peak at month 60 (the end of the observation time). We think that this is a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, then creating a bias in the plot.
+
 
 9) Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
 
@@ -187,6 +207,9 @@ seqmsplot(seqObj2, with.legend=FALSE, main="Modal states", xtlab=xtlab,
 ```{r}
 seqtrate(seqObj2)
 ```
+
+The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts. 
+
 
 11) Compute the sequence length, the number of transitions, the number of subsequences and the longitudinal entropy
 
@@ -215,11 +238,24 @@ hist(entropy)
 
 [Sol.]
 
+Summary of Sequence lenght:
 ```{r}
-summary(length)
-summary(transn)
-summary(subseq) 
-summary(entropy)
+print(summary(length))
+```
+
+Summary of Number of transitions between state episodes:
+```{r}
+print(summary(transn))
+```
+
+Summary of Number of subsequences contained in a sequence:
+```{r}
+print(summary(subseq))
+```
+
+Summary of Entropy:
+```{r}
+print(summary(entropy))
 ```
 
 
