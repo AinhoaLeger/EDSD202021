@@ -28,7 +28,6 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.height = 6)
 ```
 
-
 Load necessary packages.
 
 ```{r}
@@ -47,27 +46,27 @@ library(RColorBrewer)
 library(colorspace)
 ```
 
-
 ## Exercise 1
 
-1) Input the Dataset 2
+1)  Input the Dataset 2
 
-[Sol.] 
+[Sol.]
 
 ```{r}
 data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 ```
 
-2) Define a sequence object with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
+2)  Define a sequence object with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
 
-> 1 SNP "Single, childless",  
-> 2 SBP "Single, child b/separat.",  
-> 3 SAP "Single, child a/separat.",  
-> 4 UNP "Union, childless",  
-> 5 UBP "Union, child b/separat.",  
-> 6 UAP "Union, child a/separat."  
-    
+> 1 SNP "Single, childless",\
+> 2 SBP "Single, child b/separat.",\
+> 3 SAP "Single, child a/separat.",\
+> 4 UNP "Union, childless",\
+> 5 UBP "Union, child b/separat.",\
+> 6 UAP "Union, child a/separat."
+
 [Sol.]
+
 ```{r}
 # Create a vector for the state labels
 seqlab <-c("Single, childless", 
@@ -92,23 +91,25 @@ summary(seqObj2)
 names(seqObj2)
 ```
 
-3) Display (print) the first 10 sequences in extended and compact form
+3)  Display (print) the first 10 sequences in extended and compact form
 
 [Sol.]
 
 Extended form:
+
 ```{r}
 #display the first 5 sequences, and sequence elements 1-20 (STS format - default).
 print(seqObj2[1:10, ], format ="STS")
 ```
 
 Compact form:
+
 ```{r}
 #display the first 5 sequences, and sequence elements 1-20 (SPS format)
 print(seqObj2[1:10, ], format ="SPS")
 ```
 
-4) Plot a full representation of sequences, and order them from the first state
+4)  Plot a full representation of sequences, and order them from the first state
 
 [Sol.]
 
@@ -122,7 +123,7 @@ seqIplot(seqObj2, with.legend=TRUE, main= "All sequences",
          border=NA, sortv="from.start")
 ```
 
-5) Plot the 5 most frequent sequences. Comment the plot
+5)  Plot the 5 most frequent sequences. Comment the plot
 
 [Sol.]
 
@@ -133,7 +134,7 @@ seqfplot(seqObj2, idxs=1:5, main="5 most frequent sequences",
          ylab=NA, xlab="Time (months)", xtlab=xtlab)
 ```
 
-6) Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime? 
+6)  Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime?
 
 [Sol.]
 
@@ -147,9 +148,7 @@ From the plot we can observe that cohort 3 has the biggest proportion of childle
 
 If cohorts 1 to 3 follow a time disposition, we can observe that more recent cohorts have higher proportions of children after separations. We can infer that more recent cohorts not only are more prone to not having children, but also are more prone of having children even after the couple dissolutes.
 
-
-
-7) What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
+7)  What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
 
 [Sol.]
 
@@ -163,9 +162,7 @@ As can be seen, "Single, child b/separat." is the more frequent state after mont
 
 This behavior was observable in the plot from the previuos question, but we have to remark that these frequent states are going to be different for each cohort.
 
-
-
-8) Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
+8)  Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
 
 [Sol.]
 
@@ -177,8 +174,7 @@ seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies",
 
 The plot shows that the entropy measure keeps increasing with time, having the peak at month 60 (the end of the observation time). We think that this is a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, then creating a bias in the plot.
 
-
-9) Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
+9)  Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
 
 [Sol.]
 
@@ -201,8 +197,7 @@ seqmsplot(seqObj2, with.legend=FALSE, main="Modal states", xtlab=xtlab,
 seqtrate(seqObj2)
 ```
 
-The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts. 
-
+The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts.
 
 11) Compute the sequence length, the number of transitions, the number of subsequences and the longitudinal entropy
 
@@ -229,45 +224,48 @@ hist(entropy)
 [Sol.]
 
 Summary of Sequence lenght:
+
 ```{r}
 print(summary(length))
 ```
 
 Summary of Number of transitions between state episodes:
+
 ```{r}
 print(summary(transn))
 ```
 
 Summary of Number of subsequences contained in a sequence:
+
 ```{r}
 print(summary(subseq))
 ```
 
 Summary of Entropy:
+
 ```{r}
 print(summary(entropy))
 ```
 
-
 ## Exercise 2
 
-1) Input the Dataset 2
+1)  Input the Dataset 2
 
-[Sol.] 
+[Sol.]
 
 ```{r}
 data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 ```
 
-2) Define a sequence object with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
+2)  Define a sequence object with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
 
-> 1 SNP "Single, childless",  
-> 2 SBP "Single, child b/separat.",  
-> 3 SAP "Single, child a/separat.",  
-> 4 UNP "Union, childless",  
-> 5 UBP "Union, child b/separat.",  
-> 6 UAP "Union, child a/separat."  
-    
+> 1 SNP "Single, childless",\
+> 2 SBP "Single, child b/separat.",\
+> 3 SAP "Single, child a/separat.",\
+> 4 UNP "Union, childless",\
+> 5 UBP "Union, child b/separat.",\
+> 6 UAP "Union, child a/separat."
+
 [Sol.]
 
 ```{r}
@@ -291,7 +289,7 @@ seqObj2 <- seqdef(data2,
                   labels=seqlab)
 ```
 
-3) Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
+3)  Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
 
 [Sol.]
 
@@ -302,7 +300,7 @@ Matrix.OM.Const <- seqdist(seqObj2, method="OM", indel=1, sm="CONSTANT")
 print(Matrix.OM.Const[1:5,1:5])
 ```
 
-4) Plot the first 2 sequences and check that the OM distance is the number of non matching positions between them.
+4)  Plot the first 2 sequences and check that the OM distance is the number of non matching positions between them.
 
 [Sol.]
 
@@ -322,7 +320,7 @@ seqIplot(seqObj2[1:2, ], with.legend="right", main= "First two sequences",
 # 48*2 + 12 = 108
 ```
 
-5) Check data that the LCS distance provides the same (non-normalized)  distances as OM with indel=1 and a constant substitution cost of 2
+5)  Check data that the LCS distance provides the same (non-normalized) distances as OM with indel=1 and a constant substitution cost of 2
 
 [Sol.]
 
@@ -336,33 +334,52 @@ print(Matrix.LCS[1:5,1:5])
 print(Matrix.OM.Const[1:5,1:5])
 ```
 
-6) Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs)
+6)  Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs)
 
 [Sol.]
 
+We start by calculating the transition matrix, rounded to the 3rd decimal:
 ```{r}
-seqtrate(seqObj2)
-
-#OM with customized state-dependent subcosts 
-submatrix <- matrix(c( 0,6,4,4,6,6,
-                       6,0,6,6,4,6,
-                       4,6,0,6,6,4,
-                       4,6,6,0,6,4,
-                       6,4,6,6,0,4,
-                       6,6,4,4,4,0), nrow = 6, ncol = 6, byrow = TRUE)
+round(seqtrate(seqObj2),3)
 ```
 
-7) Compute the OM dissimilarity matrix using the previously derived substitution. Set the indel cost as half the maximum substitution cost.
+We will try to reflect the ordinal character of this matrix by:
+
+* setting the cost of remaining in the same state as 0
+
+* the higher expected cost will be 10 (since dividing 1 by the transition probability would give us an `Inf`)
+
+* the higher the probability, the lower the cost.
+
+* for all other costs, we subtract the 3rd decimal of the transition probability to the maximum cost
+
+We get the following state-dependent subcost matrix:
+
+
+```{r}
+#OM with customized state-dependent subcosts 
+submatrix <- matrix(c( 0,10,9,2,10,10,
+                       10,0,10,10,6,10,
+                       10,10,0,10,10,6,
+                       4,10,10,0,10,1,
+                       10,6,10,10,0,5,
+                       10,10,6,10,10,0), nrow = 6, ncol = 6, byrow = TRUE)
+
+print(submatrix)
+```
+
+
+7)  Compute the OM dissimilarity matrix using the previously derived substitution. Set the indel cost as half the maximum substitution cost.
 
 [Sol.]
 
 ```{r}
-Matrix.OM.State.dep <- seqdist(seqObj2, method="OM", indel=3, sm=submatrix)
+Matrix.OM.State.dep <- seqdist(seqObj2, method="OM", indel=(max(submatrix)/2), sm=submatrix)
 #display matrix
 print(Matrix.OM.State.dep[1:5,1:5])
 ```
 
-8)  From the previously computed OM dissimilarity matrix, create a  hierarchical cluster tree object with Ward method. Display the hierarchical tree
+8)  From the previously computed OM dissimilarity matrix, create a hierarchical cluster tree object with Ward method. Display the hierarchical tree
 
 [Sol.]
 
@@ -375,7 +392,7 @@ ward.OM <- hclust(as.dist(Matrix.OM.State.dep), method = "ward.D2")
 plot(ward.OM, labels=FALSE) 
 ```
 
-9) Calculate appropriate cluster cut-off criteria. Assess what is an empirically optimal cluster solution.
+9)  Calculate appropriate cluster cut-off criteria. Assess what is an empirically optimal cluster solution.
 
 [Sol.]
 
@@ -397,7 +414,7 @@ plot(wardrange.OM, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
 ```{r}
 ### store cluster solutions with best empirical fits
 #OM
-wardrange.OM.6 <-cutree(ward.OM , k=6)
+wardrange.OM.6 <- cutree(ward.OM , k=6)
 
 ### cluster consistency (plot silhouette widths)
 #OM 5-cluster solution
@@ -416,9 +433,3 @@ plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA,
 [Sol.]
 
 ## References
-
-
-
-
-
-
