@@ -459,28 +459,36 @@ silh.OM.6.indel1 <- silhouette(wardrange.OM.6.indel1, dmatrix = Matrix.OM.State.
 
 
 By lowering the indel costs, we get the following best fit for number of clusters:
-```{r}
-
+```{r, fig.cap= "Indel cost = 5"}
 ### plot ASW, HGSD and PBC: indel cost = 5
 plot(wardrange.OM, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+```
 
+```{r, fig.cap= "Indel cost = 1"}
 ### plot ASW, HGSD and PBC: indel cost = 1
 plot(wardrange.OM.indel1, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
 ```
 
+When indel costs = 5 the best fit seems to be around 5 clusters, and when we lower the indel costs to 1, the best fit seems to be around 6 clusters.
 
-And when we force the solution to be a 6-cluster:
+
+If we force the solution to be a 6-cluster one, we get the following silhouette fittings:
+
 ```{r}
-
 ### cluster consistency: indel cost = 5
-plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA, 
-     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
-
-### cluster consistency: indel cost = 1
-plot(silh.OM.6.indel1, main= "Silhouette - OM 6 cluster", border=NA, 
+plot(silh.OM.6, main= "Silhouette - OM 6 cluster, indel = 5", border=NA, 
      col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
 ```
 
+```{r, fig.cap= "Silhoutte Indel cost = 1"}
+### cluster consistency: indel cost = 1
+plot(silh.OM.6.indel1, main= "Silhouette - OM 6 cluster, indel = 1", border=NA, 
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
+```
+
+When we have indel costs = 5, the first cluster does not have the best fitting. But when we lower the costs down to 1, the 6-cluster solution is a much better fitting.
+
+We understand that if we use the transition rates matrix as a substitution matrix cost, we need lower indel costs than usual to have better fitting for clustering.
 
 
 
