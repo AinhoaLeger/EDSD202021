@@ -424,12 +424,68 @@ plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA,
      col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
 ```
 
-11) Repeat steps 8-10 using a DHD dissimilarity matrix
+11) Repeat steps 8-10 using an OM with transition rates as substitution costs, and 1 as indel costs.
 
 [Sol.]
+
+Since we are already using the transition rates matrix as a proxy of substitution costs, now we are lowering the indel cost from 5 to 1 and comparing results.
+
+```{r}
+Matrix.OM.State.dep.indel1 <- seqdist(seqObj2, method="OM", indel=1, sm=submatrix)
+#display matrix
+
+# cluster sequences using the OM distances with state-dependent costs and Ward method
+ward.OM.indel1 <- hclust(as.dist(Matrix.OM.State.dep.indel1), method = "ward.D2")
+
+
+### Generate an obseject with 1-10 cluster solutions for each prior anal
+wardrange.OM.indel1 <- as.clustrange(ward.OM.indel1, diss=Matrix.OM.State.dep.indel1, ncluster=10)
+
+
+
+
+
+### store cluster solutions with best empirical fits
+#OM
+wardrange.OM.indel1 <- cutree(ward.OM , k=6)
+
+### cluster consistency (plot silhouette widths)
+#OM 5-cluster solution
+silh.OM.6.indel1 <- silhouette(wardrange.OM.indel1, dmatrix = Matrix.OM.State.dep)
+
+
+```
+
 
 12) Compare the results between the OM and the DHD approaches
 
 [Sol.]
+
+
+By lowering the indel costs, we get the following best fit for number of clusters:
+```{r}
+
+### plot ASW, HGSD and PBC: indel cost = 5
+plot(wardrange.OM, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+
+### plot ASW, HGSD and PBC: indel cost = 1
+plot(wardrange.OM.indel1, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+```
+
+
+And when we force the solution to be a 6-cluster:
+```{r}
+
+### cluster consistency: indel cost = 5
+plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA, 
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
+
+### cluster consistency: indel cost = 1
+plot(silh.OM.6.indel1, main= "Silhouette - OM 6 cluster", border=NA, 
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
+```
+
+
+
 
 ## References
