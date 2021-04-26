@@ -398,7 +398,7 @@ plot(ward.OM, labels=FALSE)
 
 ```{r}
 ### Generate an obseject with 1-10 cluster solutions for each prior anal
-wardrange.OM <-as.clustrange(ward.OM, diss=Matrix.OM.State.dep, ncluster=10)
+wardrange.OM <- as.clustrange(ward.OM, diss=Matrix.OM.State.dep, ncluster=10)
 
 ### show cluster cut-off measure values - indicate three optimal cluster solutions 
 summary(wardrange.OM, max.rank=3)
@@ -421,7 +421,7 @@ wardrange.OM.6 <- cutree(ward.OM , k=6)
 silh.OM.6 <- silhouette(wardrange.OM.6, dmatrix = Matrix.OM.State.dep)
 summary(silh.OM.6)
 plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA, 
-     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "pink"))
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
 ```
 
 11) Repeat steps 8-10 using a DHD dissimilarity matrix
