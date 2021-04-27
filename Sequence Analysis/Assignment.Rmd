@@ -90,14 +90,14 @@ seqObj2 <- seqdef(data2, var=2:61,
 Extended form:
 
 ```{r, results = "asis"}
-#display the first 10 sequences (STS format - default)
+# Display the first 10 sequences (STS format - default)
 print(seqObj2[1:10, ], format ="STS")
 ```
 
 Compact form:
 
 ```{r, results = "asis"}
-#display the first 10 sequences (SPS format)
+# Display the first 10 sequences (SPS format)
 print(seqObj2[1:10, ], format ="SPS")
 ```
 
@@ -108,7 +108,7 @@ print(seqObj2[1:10, ], format ="SPS")
 ```{r}
 # X-axis for exercise
 xtlab=seq(0,60, by=1)
-#All sequences -sequence index plot (sorted - first state)
+# All sequences -sequence index plot (sorted - first state)
 par(mfrow=c(2,1))
 seqIplot(seqObj2, with.legend=TRUE, main= "All sequences", 
          xtlab=xtlab, xlab="Time (months)", ylab=NA, yaxis=TRUE,
@@ -166,7 +166,7 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
 
 As it can be seen, "Single, childless" is the most frequent state in the first 4 months. After 4 months, "Single, child b/separat." is the most frequent state. Therefore, one and five years after break-up the most frequent state is still "Single, child b/separat.".
 
-This behavior would have been observable from a distribution plot like the one of the previous question, if considering all the cohorts combined.
+This behaviour would have been observable from a distribution plot like the one of the previous question, if considering all the cohorts combined.
 
 8) Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
 
@@ -180,7 +180,7 @@ seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies",
 
 The plot shows that the entropy measure keeps increasing with time, reaching its maximum at month 60 (the end of the observation time).  
 
-We think that this is a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, then creating a bias in the plot.
+This could be a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, and hence creating a bias in the plot.
 
 9)  Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
 
@@ -213,16 +213,16 @@ seqtrate(seqObj2)
 
 The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts.
 
-11) Compute the sequence length, the number of transitions, the number of subsequences and the longitudinal entropy
+11) Compute the sequence length, the number of transitions, the number of sub-sequences and the longitudinal entropy
 
 [Sol.]
 
 ```{r}
-# Sequence lenght - number of elements with valid cases
+# Sequence length - number of elements with valid cases
 length <-seqlength(seqObj2)
 # Number of transitions between state episodes in each sequence
 transn <-seqtransn(seqObj2) 
-# Number of subsequences contained in a sequence
+# Number of sub-sequences contained in a sequence
 subseq <- seqsubsn(seqObj2)
 # Longitudinal or within-sequence entropy
 entropy <- seqient(seqObj2)
@@ -232,7 +232,7 @@ entropy <- seqient(seqObj2)
 
 [Sol.]
 
-Summary of Sequence lenght:
+Summary of Sequence length:
 
 ```{r, results='hold'}
 summary(length)
@@ -244,7 +244,7 @@ Summary of Number of transitions between state episodes:
 summary(transn)
 ```
 
-Summary of Number of subsequences contained in a sequence:
+Summary of Number of sub-sequences contained in a sequence:
 
 ```{r, results='hold'}
 summary(subseq)
@@ -256,7 +256,7 @@ Summary of Entropy:
 summary(entropy)
 ```
 
-Looking at the histogram of these quantities, we can see that most of the sequences are concentrated on higher length, low number of transitions and subsequences, and low entropies.
+Looking at the histogram of these quantities, we can see that most of the sequences are concentrated on higher length, low number of transitions and sub-sequences, and low entropies.
 
 ```{r}
 par(mfrow=c(2,2))
@@ -291,23 +291,15 @@ data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 
 ```{r}
 #vector for the state labels
-seqlab <-c("Single, childless", 
-           "Single, child b/separat.", 
-           "Single, child a/separat.", 
-           "Union, childless", 
-           "Union, child b/separat.", 
-           "Union, child a/separat.")
-
+seqlab <-c("Single, childless", "Single, child b/separat.", 
+           "Single, child a/separat.", "Union, childless", 
+           "Union, child b/separat.", "Union, child a/separat.")
 #vector of short state names (default would be alphabet labels)
 sllist <- c("SNP","SBP","SAP","UNP", "UBP", "UAP") 
-
 ###  Generate sequence object
-seqObj2 <- seqdef(data2, 
-                  var=2:61,  
-                  alphabet=c(1:6),
-                  cpal=color1, 
-                  states=sllist, 
-                  labels=seqlab)
+seqObj2 <- seqdef(data2, var=2:61,  
+                  alphabet=c(1:6), cpal=color1, 
+                  states=sllist, labels=seqlab)
 ```
 
 3)  Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
@@ -346,7 +338,7 @@ seqIplot(seqObj2[1:2, ], with.legend="right", main= "First two sequences",
 [Sol.]
 
 ```{r}
-#Longest common subsequence
+#Longest common sub-sequence
 Matrix.LCS <- seqdist(seqObj2,method="LCS")
 #display matrix
 print(Matrix.LCS[1:5,1:5])
