@@ -1,5 +1,5 @@
 ---
-title: "Sequence Analysis"
+title: "European Doctoral School of Demography  \n Sequence Analysis"
 author: |
   | Liliana Patricia Calderón Bernal
   | Gonzalo Daniel Garcia
@@ -25,7 +25,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       include = TRUE,
                       results = "hide",
                       fig.align = 'center',
-                      fig.height = 6)
+                      fig.height = 7,
+                      fig.width = 9)
 ```
 
 Load necessary packages.
@@ -46,7 +47,7 @@ library(RColorBrewer)
 library(colorspace)
 ```
 
-## Exercise 1
+# Exercise 1
 
 1)  Input the Dataset 2
 
@@ -69,26 +70,17 @@ data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 
 ```{r}
 # Create a vector for the state labels
-seqlab <-c("Single, childless", 
-           "Single, child b/separat.", 
-           "Single, child a/separat.", 
-           "Union, childless", 
-           "Union, child b/separat.", 
-           "Union, child a/separat.")
+seqlab <-c("Single, childless", "Single, child b/separat.", 
+           "Single, child a/separat.", "Union, childless", 
+           "Union, child b/separat.", "Union, child a/separat.")
 # Create a vector of short state names (default would be alphabet labels)
 sllist <- c("SNP","SBP","SAP","UNP", "UBP", "UAP") 
 # Define Color palette
 color1 <-  sequential_hcl(6, palette = "SunsetDark", rev= TRUE) 
-###  Generate sequence object
-seqObj2 <- seqdef(data2, 
-                  var=2:61,  
-                  alphabet=c(1:6),
-                  cpal=color1, 
-                  states=sllist, 
-                  labels=seqlab)
-### Retrieve information from sequence object
-summary(seqObj2)
-names(seqObj2)
+# Generate sequence object
+seqObj2 <- seqdef(data2, var=2:61, 
+                  alphabet=c(1:6), cpal=color1, 
+                  states=sllist, labels=seqlab)
 ```
 
 3)  Display (print) the first 10 sequences in extended and compact form
@@ -97,33 +89,35 @@ names(seqObj2)
 
 Extended form:
 
-```{r}
-#display the first 5 sequences, and sequence elements 1-20 (STS format - default).
+```{r, results = "asis"}
+# Display the first 10 sequences (STS format - default)
 print(seqObj2[1:10, ], format ="STS")
 ```
 
 Compact form:
 
-```{r}
-#display the first 5 sequences, and sequence elements 1-20 (SPS format)
+```{r, results = "asis"}
+# Display the first 10 sequences (SPS format)
 print(seqObj2[1:10, ], format ="SPS")
 ```
 
-4)  Plot a full representation of sequences, and order them from the first state
+4) Plot a full representation of sequences, and order them from the first state
 
 [Sol.]
 
 ```{r}
 # X-axis for exercise
 xtlab=seq(0,60, by=1)
-#All sequences -sequence index plot (sorted - first state)
+# All sequences -sequence index plot (sorted - first state)
 par(mfrow=c(2,1))
 seqIplot(seqObj2, with.legend=TRUE, main= "All sequences", 
          xtlab=xtlab, xlab="Time (months)", ylab=NA, yaxis=TRUE,
          border=NA, sortv="from.start")
 ```
 
-5)  Plot the 5 most frequent sequences. Comment the plot
+At a first glance, the majority of the individuals are single, with or without children (ligther colors) after separation. With time passing, some individuals experience unions (darker colors) and at the end of the period about half of the individuals are still single.
+
+5)  Plot the 5 most frequent sequences. Comment the plot.
 
 [Sol.]
 
@@ -133,6 +127,14 @@ seqfplot(seqObj2, idxs=1:5, main="5 most frequent sequences",
          with.legend=TRUE, border=NA,
          ylab=NA, xlab="Time (months)", xtlab=xtlab)
 ```
+
+The same information can be obtained as a frequency table with absolute and relative frequencies.
+
+```{r, results='hold'}
+seqtab(seqObj2, idxs=1:5)
+```
+
+The five most frequent sequences after the separation are "Single, child b/separat." for the 52 months (<1\%), "Union, child b/separat." for the whole period (<1\%), "Union, childless" for the whole period (1\%), "Single, childless" for the whole period (22\%), "Single, child b/separat." for the whole period (27\%). Overall, the five most frequent sequences account for 52\% of all the sequences.
 
 6)  Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime?
 
@@ -144,9 +146,13 @@ seqdplot(seqObj2, group=data2$BIRTHCOH, with.legend=TRUE,
          border=NA, xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
-From the plot we can observe that cohort 3 has the biggest proportion of childless status, for both Single and Union types.
+From the plot we can observe that Cohort 1 has the bigger proportion of single who are childless or had a child before separation, with the proportion of single who are childless being lower than the proportion of single who had a child before separation. Both proportions tends to remain constant/slightly decreasing over time.  
 
-If cohorts 1 to 3 follow a time disposition, we can observe that more recent cohorts have higher proportions of children after separations. We can infer that more recent cohorts not only are more prone to not having children, but also are more prone of having children even after the couple dissolutes.
+In Cohort 3, the proportion of single childless represent more than half of the whole individuals just after separation and the second more frequent state is being single with a child before separation. Both the proportions of single decrease consistently over time, in favour of the other states (in particular being in a union and childless).
+
+Cohort 2 can be seen as an intermediate situation.  
+
+Cohort 1 is the further one in time ordering (1960/69), followed by cohort 2 (1970/79) and cohort 3 (1980/89). Therefore, we can observe that more recent cohorts tends to re-enter in an union after separation. In addition, individuals seems more more prone of having children even after the couple dissolutes.
 
 7)  What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
 
@@ -158,27 +164,29 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
           xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
-As can be seen, "Single, child b/separat." is the more frequent state after month 4. Before that, "Single, childless" is the frequent one.
+As it can be seen, "Single, childless" is the most frequent state in the first 4 months. After 4 months, "Single, child b/separat." is the most frequent state. Therefore, one and five years after break-up the most frequent state is still "Single, child b/separat.".
 
-This behavior was observable in the plot from the previuos question, but we have to remark that these frequent states are going to be different for each cohort.
+This behaviour would have been observable from a distribution plot like the one of the previous question, if considering all the cohorts combined.
 
-8)  Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
+8) Assess the cross-sectional state diversity plotting a measure of entropy. At what time after separation is the cross-sectional diversity of the states at its highest?
 
 [Sol.]
 
-```{r, fig.height = 5}
+```{r}
 # Plot the transversal entropies in each position of the sequence
 seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies", 
           use.layout=FALSE, border=NA,xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
-The plot shows that the entropy measure keeps increasing with time, having the peak at month 60 (the end of the observation time). We think that this is a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, then creating a bias in the plot.
+The plot shows that the entropy measure keeps increasing with time, reaching its maximum at month 60 (the end of the observation time).  
+
+This could be a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, and hence creating a bias in the plot.
 
 9)  Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
 
 [Sol.]
 
-```{r, fig.height = 5}
+```{r, fig.height=6}
 par(mfrow = c(1, 2))
 # Plot the mean time spent in eache state
 seqmtplot(seqObj2, with.legend=FALSE, main= "Mean duration in state", 
@@ -189,65 +197,78 @@ seqmsplot(seqObj2, with.legend=FALSE, main="Modal states", xtlab=xtlab,
           ylab=NA, xlab="Time (months)")
 ```
 
+The exact information on the mean times can be obtained in a table. The mean time of individuals in state "Single, child b/separat." is 23.4 months, in "Single, childless" it is 21.5 months. In all the other states, individuals stay on average less than 6 months.
+
+```{r, results='hold'}
+apply(seqistatd(seqObj2),2,mean)
+```
+
 10) Compute the (overall) transition rate matrix. What is the largest transition rate between two different states?
 
 [Sol.]
 
-```{r}
+```{r, results='hold'}
 seqtrate(seqObj2)
 ```
 
 The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts.
 
-11) Compute the sequence length, the number of transitions, the number of subsequences and the longitudinal entropy
+11) Compute the sequence length, the number of transitions, the number of sub-sequences and the longitudinal entropy
 
 [Sol.]
 
-```{r, fig.height = 5}
-# Sequence lenght - number of elements with valid cases (print results for first five sequences)
+```{r}
+# Sequence length - number of elements with valid cases
 length <-seqlength(seqObj2)
-length[1:5]
-# Number of transitions between state episodes in each sequence (print results for first five sequences)
+# Number of transitions between state episodes in each sequence
 transn <-seqtransn(seqObj2) 
-transn[1:5]
-# Number of subsequences contained in a sequence
+# Number of sub-sequences contained in a sequence
 subseq <- seqsubsn(seqObj2)
-table(subseq) 
 # Longitudinal or within-sequence entropy
 entropy <- seqient(seqObj2)
-par(mfrow=c(1,1))
-hist(entropy)
 ```
 
 12) Using summary(), look at the min, max, mean, median and quartiles of the distribution of each of the computed longitudinal characteristics.
 
 [Sol.]
 
-Summary of Sequence lenght:
+Summary of Sequence length:
 
-```{r}
-print(summary(length))
+```{r, results='hold'}
+summary(length)
 ```
 
 Summary of Number of transitions between state episodes:
 
-```{r}
-print(summary(transn))
+```{r, results='hold'}
+summary(transn)
 ```
 
-Summary of Number of subsequences contained in a sequence:
+Summary of Number of sub-sequences contained in a sequence:
 
-```{r}
-print(summary(subseq))
+```{r, results='hold'}
+summary(subseq)
 ```
 
 Summary of Entropy:
 
-```{r}
-print(summary(entropy))
+```{r, results='hold'}
+summary(entropy)
 ```
 
-## Exercise 2
+Looking at the histogram of these quantities, we can see that most of the sequences are concentrated on higher length, low number of transitions and sub-sequences, and low entropies.
+
+```{r}
+par(mfrow=c(2,2))
+hist(length)
+hist(transn)
+hist(subseq)
+hist(entropy)
+```
+
+
+
+# Exercise 2
 
 1)  Input the Dataset 2
 
@@ -270,23 +291,15 @@ data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 
 ```{r}
 #vector for the state labels
-seqlab <-c("Single, childless", 
-           "Single, child b/separat.", 
-           "Single, child a/separat.", 
-           "Union, childless", 
-           "Union, child b/separat.", 
-           "Union, child a/separat.")
-
+seqlab <-c("Single, childless", "Single, child b/separat.", 
+           "Single, child a/separat.", "Union, childless", 
+           "Union, child b/separat.", "Union, child a/separat.")
 #vector of short state names (default would be alphabet labels)
 sllist <- c("SNP","SBP","SAP","UNP", "UBP", "UAP") 
-
 ###  Generate sequence object
-seqObj2 <- seqdef(data2, 
-                  var=2:61,  
-                  alphabet=c(1:6),
-                  cpal=color1, 
-                  states=sllist, 
-                  labels=seqlab)
+seqObj2 <- seqdef(data2, var=2:61,  
+                  alphabet=c(1:6), cpal=color1, 
+                  states=sllist, labels=seqlab)
 ```
 
 3)  Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
@@ -325,7 +338,7 @@ seqIplot(seqObj2[1:2, ], with.legend="right", main= "First two sequences",
 [Sol.]
 
 ```{r}
-#Longest common subsequence
+#Longest common sub-sequence
 Matrix.LCS <- seqdist(seqObj2,method="LCS")
 #display matrix
 print(Matrix.LCS[1:5,1:5])
