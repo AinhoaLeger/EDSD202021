@@ -118,7 +118,7 @@ seqIplot(seqObj2, with.legend=TRUE, main= "All sequences",
          border=NA, sortv="from.start")
 ```
 
-At a first glance, the majority of the individuals are single, with or without children (lighter colors) after separation. With time passing, some individuals experience unions (darker colors) and at the end of the period about half of the individuals are still single.
+At a first glance, after separation, the majority of the individuals are single, with or without children (lighter colours). With time passing, some individuals experience unions (darker colours) and at the end of the period about half of the individuals are still single.
 
 5)  Plot the 5 most frequent sequences. Comment the plot.
 
@@ -138,7 +138,7 @@ seqtab(seqObj2, idxs=1:5)
 
 The five most frequent sequences after the separation are "Single, child b/separat." for the whole period (27\%), "Single, childless" for the whole period (22\%), "Union, childless" for the whole period (1\%), "Union, child b/separat." for the whole period (<1\%), and "Single, child b/separat." for 52 months (<1\%). Overall, the five most frequent sequences account for 52\% of all the sequences.
 
-6)  Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime?
+6)  Create a state distribution plot for each birth cohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime?
 
 [Sol.]
 
@@ -148,13 +148,13 @@ seqdplot(seqObj2, group=data2$BIRTHCOH, with.legend=TRUE,
          border=NA, xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
-From the plot we can observe that Cohort 1 has the bigger proportion of single who are childless or had a child before separation, with the proportion of single who are childless being lower than the proportion of single who had a child before separation. Both proportions tends to remain constant/slightly decreasing over time.  
+From the plot we can observe that Cohort 1 has the bigger proportion of single who are childless or had a child before separation, with the proportion of single who are childless being lower than that of single who had a child before separation. Both proportions tends to remain constant/slightly decreasing over time.  
 
-In Cohort 3, the proportion of single childless represent more than half of the whole individuals just after separation and the second more frequent state is being single with a child before separation. Both the proportions of single decrease consistently over time, in favour of the other states (in particular being in a union and childless).
+In Cohort 3, single childless' state represents more than half of the whole individuals just after separation, and the second more frequent state is being single with a child before separation. Both proportions decrease consistently over time, in favour of the other states (in particular of being in a union and childless).
 
 Cohort 2 can be seen as an intermediate situation.  
 
-Cohort 1 is the further one in time ordering (1960/69), followed by cohort 2 (1970/79) and cohort 3 (1980/89). Therefore, we can observe that more recent cohorts tends to re-enter in an union after separation. In addition, individuals seems more more prone of having children even after the couple dissolutes.
+Cohort 1 is the further one in time ordering (1960/69), followed by cohort 2 (1970/79) and cohort 3 (1980/89). Therefore, we can observe that more recent cohorts tends to re-enter in an union after separation, and individuals seems more prone of having children even after a couple dissolution.
 
 7)  What are the most frequent states one and five years after break-up? Use a modal state plot for illustration.
 
@@ -182,7 +182,7 @@ seqHtplot(seqObj2, with.legend=FALSE, main= "Transversal entropies",
 
 The plot shows that the entropy measure keeps increasing with time, reaching its maximum at month 60 (the end of the observation time).  
 
-This could be a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, and hence creating a bias in the plot.
+This could be a result of having different ages in the individual sequence: even though we are analyzing the data from a life-course perspective, that 60-months could represent many different ages (and stages) in a woman's life, which could create a bias in the plot.
 
 9)  Display side by side in a same plot area the mean times spent in each of the states and the sequence of modal states.
 
@@ -224,7 +224,7 @@ The most frequent state is "Single, childless" for the first 5 months and "Singl
 seqtrate(seqObj2)
 ```
 
-The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts.
+The largest transition rate between two different states is the one that goes from SNP to UNP: from Single with no children to Union with no children. The second largest is the one that reverses that states from UNP to SNP. This means that going in and out from Unions without children is more probable than moving to other states, which relates to the fact that states where children are present are less frequent through cohorts.
 
 11) Compute the sequence length, the number of transitions, the number of sub-sequences and the longitudinal entropy
 
@@ -269,7 +269,7 @@ Summary of Entropy:
 summary(entropy)
 ```
 
-Looking at the histogram of these quantities, we can see that most of the sequences are concentrated on higher length, low number of transitions and sub-sequences, and low entropies.
+By looking at the histogram of these quantities, we can identify that most of the sequences are concentrated on higher length, low number of transitions and sub-sequences, and low entropies.
 
 ```{r}
 par(mfrow=c(2,2))
@@ -329,7 +329,7 @@ seqObj2 <- seqdef(data2,
 We assign the substitution cost to 2 and the indel cost to 1.
 
 ```{r, results='hold'}
-# OM with CONSTANT subcosts (OM with indel=1, subs=2)
+# OM with CONSTANT substitution costs (OM with indel=1, subs=2)
 Matrix.OM.Const <- seqdist(seqObj2, method="OM", indel=1, sm="CONSTANT")
 # Display matrix
 print(Matrix.OM.Const[1:5,1:5])
@@ -368,7 +368,7 @@ print(Matrix.LCS[1:5,1:5])
 print(Matrix.OM.Const[1:5,1:5])
 ```
 
-6) Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs)
+6) Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs).
 
 [Sol.]
 
@@ -380,10 +380,10 @@ round(seqtrate(seqObj2),3)
 
 We will try to reflect the ordinal character of this matrix by:
 
-* setting the cost of remaining in the same state as 0
-* the highest expected cost will be 10 (since dividing 1 by the transition probability would give us an `Inf`)
+* setting the cost of remaining in the same state as 0.
+* the highest expected cost will be 10 (since dividing 1 by the transition probability would give us an `Inf`).
 * the higher the probability, the lower the cost.
-* for all other costs, we subtract the 3rd decimal of the transition probability to the maximum cost
+* for all other costs, we subtract the 3rd decimal of the transition probability to the maximum cost.
 
 We get the following state-dependent subcost matrix:
 
@@ -451,12 +451,12 @@ wardrange.OM.6 <- cutree(ward.OM , k=6)
 silh.OM.6 <- silhouette(wardrange.OM.6, dmatrix = Matrix.OM.State.dep)
 #summary(silh.OM.6)
 plot(silh.OM.6, main= "Silhouette - OM 6 cluster, indel = 5", border=NA, 
-     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "#000000"))
 ```
 
 According to the silhouettes, the individuals are well matched to their own cluster. Only in the first cluster the individuals seems to be not coherently classified. The averaged silhouette width indicates an overall coherence of the clusters (ASW=0.68).  
 
-We then labelled the clusters by looking at the full sequence index plot by cluster. In order to avoid overplotting, we sorted the sequences according to their distance to the most representative sequence, defined by the neighborhood density.
+We then labelled the clusters by looking at the full sequence index plot by cluster. To avoid over-plotting, we sorted the sequences according to their distance to the most representative sequence, defined by the neighbourhood density.
 
 ```{r, fig.height=10}
 # Generate a variable that contains the OM distance of each sequence to repseq1
@@ -464,7 +464,7 @@ repseq1 <- seqrep(seqObj2, diss=Matrix.OM.State.dep, criterion="density", nrep=1
 OMdistRepseq <- seqdist(seqObj2, refseq = repseq1, method = "OM", 
                         indel=5, sm=submatrix) 
 # Define the cluster variable
-cl.6fac <- factor(wardrange.OM.6, labels = paste("Type", 1:6))
+cl.6fac <- factor(wardrange.OM.6, labels = paste("Cluster", 1:6))
 # Plot the full sequence index plot
 seqIplot(seqObj2, group=cl.6fac, with.legend=TRUE, 
          main= "All sequences", xtlab=xtlab, xlab="Time (months)", 
@@ -473,17 +473,17 @@ seqIplot(seqObj2, group=cl.6fac, with.legend=TRUE,
 
 We can identify the following patterns:
 
-* Cluster 1 - Single parents (shorter sequences): individuals who had a child b/ separation, remain single for 2-3 years after separation and then are not followed anymore
+* Cluster 1 - Single parents (shorter sequences): individuals who had a child b/ separation, remain single for 2-3 years after separation and then are not followed any more.
 
-* Cluster 2 - Childless single entering in a union: individuals who are single and childless entering in an union and remaining childless
+* Cluster 2 - Childless single entering in a union: individuals who are single and childless entering in an union and remaining childless.
 
-* Cluster 3 - Parents ever single: individuals who had a child b/ separation and remain single over the whole period
+* Cluster 3 - Parents ever single: individuals who had a child before separation and remain single over the whole period.
 
-* Cluster 4: Childless single entering in a union and having a child
+* Cluster 4: Childless single entering in a union and having a child after separation.
 
-* Cluster 5 - Single parents entering a union: single individuals who had a child b/ separation and entered a union before two years after separation
+* Cluster 5 - Single parents entering a union: single individuals who had a child b/ separation and entered a union before two years after separation.
 
-* Cluster 6 - Single becoming parents: childless single or single who already had a child b/ separation having a child approximately one year after separation
+* Cluster 6 - Single becoming parents: childless single or single who already had a child before separation having a child approximately one year after separation.
 
 We can also look at the relative frequency plot. 
 
@@ -510,7 +510,7 @@ seqplot.rf(seqObj2[wardrange.OM.6 == 6,], diss=Matrix.OM.6, k=100, xtlab=xtlab, 
 
 [Sol.]
 
-Since we are already using the transition rates matrix as a proxy of substitution costs, now we are lowering the indel cost from 5 to 1 and comparing results.
+Since we have already used the transition rates matrix as a proxy of substitution costs, now we lower the indel cost from 5 to 1 and compare results.
 
 ```{r, fig.height=6.5}
 # OM dissimilarity matrix
@@ -522,7 +522,7 @@ plot(ward.OM.TRATE, labels=FALSE)
 ```
 
 ```{r, fig.height=6}
-# Generate an object with 1-10 cluster solutions for each prior anal
+# Generate an object with 1-10 cluster solutions
 wardrange.OM.T <- as.clustrange(ward.OM.TRATE, diss=Matrix.OM.TRATE, ncluster=10)
 plot(wardrange.OM.T, norm="zscore", main="Indel cost = 1")
 ```
@@ -534,11 +534,11 @@ By lowering the indel costs, we have a more clear indication that the best fit i
 wardrange.OM.T6 <- cutree(ward.OM.TRATE, k=6)
 # Cluster consistency (plot silhouette widths)
 silh.OM.T6 <- silhouette(wardrange.OM.T6, dmatrix = Matrix.OM.TRATE)
-#summary(silh.OM.T6)
+# Summary(silh.OM.T6)
 plot(silh.OM.T6, main= "Silhouette - OM 6 cluster, indel = 1", border=NA, 
      col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "#383838"))
 ```
-By chosing again the solution with 6 clusters, also the average silhouette improve ($0.72$).
+By choosing again the solution with 6 clusters, also the average silhouette improve ($0.72$).
 
 We understand that if we use the transition rates matrix as a substitution matrix cost, we need lower indel costs than usual to have better fitting for clustering.
 
@@ -554,7 +554,7 @@ repseq2 <- seqrep(seqObj2, diss=Matrix.OM.TRATE, criterion="density", nrep=1)
 OM.T.distRepseq <- seqdist(seqObj2, refseq = repseq2, method = "OM", 
                         indel=1, sm="TRATE") 
 # Define the cluster variable
-cl.6fac2 <- factor(wardrange.OM.T6, labels = paste("Type", 1:6))
+cl.6fac2 <- factor(wardrange.OM.T6, labels = paste("Cluster", 1:6))
 # Plot the full sequence index plot
 seqIplot(seqObj2, group=cl.6fac2, with.legend=TRUE, 
          main= "All sequences", xtlab=xtlab, xlab="Time (months)", 
