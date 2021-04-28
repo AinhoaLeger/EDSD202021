@@ -32,9 +32,8 @@ knitr::opts_chunk$set(echo = TRUE,
 Load necessary packages.
 
 ```{r}
-# Call TraMineR library
+# Call required libraries
 library(TraMineR)
-# Call other required libraries
 library(ggplot2)
 library(grDevices)
 library(graphics)
@@ -45,7 +44,9 @@ library(TraMineRextras)
 library(WeightedCluster)
 library(RColorBrewer)
 library(colorspace)
+library(tidyverse)
 ```
+
 
 # Exercise 1
 
@@ -78,9 +79,12 @@ sllist <- c("SNP","SBP","SAP","UNP", "UBP", "UAP")
 # Define Color palette
 color1 <-  sequential_hcl(6, palette = "SunsetDark", rev= TRUE) 
 # Generate sequence object
-seqObj2 <- seqdef(data2, var=2:61, 
-                  alphabet=c(1:6), cpal=color1, 
-                  states=sllist, labels=seqlab)
+seqObj2 <- seqdef(data2, 
+                  var=2:61, 
+                  alphabet=c(1:6), 
+                  cpal=color1, 
+                  states=sllist, 
+                  labels=seqlab)
 ```
 
 3)  Display (print) the first 10 sequences in extended and compact form
@@ -109,20 +113,18 @@ print(seqObj2[1:10, ], format ="SPS")
 # X-axis for exercise
 xtlab=seq(0,60, by=1)
 # All sequences -sequence index plot (sorted - first state)
-par(mfrow=c(2,1))
 seqIplot(seqObj2, with.legend=TRUE, main= "All sequences", 
          xtlab=xtlab, xlab="Time (months)", ylab=NA, yaxis=TRUE,
          border=NA, sortv="from.start")
 ```
 
-At a first glance, the majority of the individuals are single, with or without children (ligther colors) after separation. With time passing, some individuals experience unions (darker colors) and at the end of the period about half of the individuals are still single.
+At a first glance, the majority of the individuals are single, with or without children (lighter colors) after separation. With time passing, some individuals experience unions (darker colors) and at the end of the period about half of the individuals are still single.
 
 5)  Plot the 5 most frequent sequences. Comment the plot.
 
 [Sol.]
 
 ```{r}
-par(mfrow=c(2,1))
 seqfplot(seqObj2, idxs=1:5, main="5 most frequent sequences", 
          with.legend=TRUE, border=NA,
          ylab=NA, xlab="Time (months)", xtlab=xtlab)
@@ -134,7 +136,7 @@ The same information can be obtained as a frequency table with absolute and rela
 seqtab(seqObj2, idxs=1:5)
 ```
 
-The five most frequent sequences after the separation are "Single, child b/separat." for the 52 months (<1\%), "Union, child b/separat." for the whole period (<1\%), "Union, childless" for the whole period (1\%), "Single, childless" for the whole period (22\%), "Single, child b/separat." for the whole period (27\%). Overall, the five most frequent sequences account for 52\% of all the sequences.
+The five most frequent sequences after the separation are "Single, child b/separat." for the whole period (27\%), "Single, childless" for the whole period (22\%), "Union, childless" for the whole period (1\%), "Union, child b/separat." for the whole period (<1\%), and "Single, child b/separat." for 52 months (<1\%). Overall, the five most frequent sequences account for 52\% of all the sequences.
 
 6)  Create a state distribution plot for each birthcohort (BIRTHCOH). What are the cross-cohort differences in the distribution of states overtime?
 
@@ -164,7 +166,7 @@ seqmsplot(seqObj2, with.legend=TRUE, main="Modal states",
           xtlab=xtlab, ylab=NA, xlab="Time (months)")
 ```
 
-As it can be seen, "Single, childless" is the most frequent state in the first 4 months. After 4 months, "Single, child b/separat." is the most frequent state. Therefore, one and five years after break-up the most frequent state is still "Single, child b/separat.".
+As it can be seen, "Single, childless" is the most frequent state in the first 5 months. After 5 months, "Single, child b/separat." is the most frequent state. Therefore, one and five years after break-up the most frequent state is still "Single, child b/separat.".
 
 This behaviour would have been observable from a distribution plot like the one of the previous question, if considering all the cohorts combined.
 
@@ -186,10 +188,11 @@ This could be a result of having different ages in the individual sequence: even
 
 [Sol.]
 
-```{r, fig.height=6}
+```{r}
 par(mfrow = c(1, 2))
 # Plot the mean time spent in eache state
-seqmtplot(seqObj2, with.legend=FALSE, main= "Mean duration in state", 
+seqmtplot(seqObj2, with.legend=FALSE, 
+          main= "Mean duration in state (in months)", 
           ylab=NA, ylim=c(0,25), yaxis=F)
 axis(2, at=seq(from=0, to=25, by=2))
 # Plot modal states in each position of the sequence
@@ -197,11 +200,21 @@ seqmsplot(seqObj2, with.legend=FALSE, main="Modal states", xtlab=xtlab,
           ylab=NA, xlab="Time (months)")
 ```
 
-The exact information on the mean times can be obtained in a table. The mean time of individuals in state "Single, child b/separat." is 23.4 months, in "Single, childless" it is 21.5 months. In all the other states, individuals stay on average less than 6 months.
+The exact information on the mean times can be obtained in a table.
 
 ```{r, results='hold'}
-apply(seqistatd(seqObj2),2,mean)
+mean.month.seq <- seqistatd(seqObj2)
+apply(mean.month.seq,2,mean)
 ```
+
+The mean time of individuals in state "Single, child b/separat." is 23.4 months, in "Single, childless" it is 21.5 months. In all the other states, individuals stay on average less than 6 months.
+
+```{r, results='hold'}
+modal.month.seq <- seqdef(as_tibble(seqmodst(seqObj2)))
+print(modal.month.seq, format = "SPS")
+```
+
+The most frequent state is "Single, childless" for the first 5 months and "Single, child b/separat." for the next 55 months.
 
 10) Compute the (overall) transition rate matrix. What is the largest transition rate between two different states?
 
@@ -267,6 +280,7 @@ hist(entropy)
 ```
 
 
+\newpage
 
 # Exercise 2
 
@@ -290,151 +304,206 @@ data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 [Sol.]
 
 ```{r}
-#vector for the state labels
-seqlab <-c("Single, childless", "Single, child b/separat.", 
-           "Single, child a/separat.", "Union, childless", 
-           "Union, child b/separat.", "Union, child a/separat.")
-#vector of short state names (default would be alphabet labels)
+# Create a vector for the state labels
+seqlab <-c("Single, childless", 
+           "Single, child b/separat.", 
+           "Single, child a/separat.", 
+           "Union, childless", 
+           "Union, child b/separat.", 
+           "Union, child a/separat.")
+# Create a vector of short state names (default would be alphabet labels)
 sllist <- c("SNP","SBP","SAP","UNP", "UBP", "UAP") 
-###  Generate sequence object
-seqObj2 <- seqdef(data2, var=2:61,  
-                  alphabet=c(1:6), cpal=color1, 
-                  states=sllist, labels=seqlab)
+# Generate sequence object
+seqObj2 <- seqdef(data2, 
+                  var=2:61,  
+                  alphabet=c(1:6), 
+                  cpal=color1, 
+                  states=sllist, 
+                  labels=seqlab)
 ```
 
-3)  Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
+3) Compute the matrix of pairwise distances - OM with constant costs - between all sequences and display the results for the first 5 sequences.
 
 [Sol.]
 
-```{r}
-#OM with CONSTANT subcosts (OM with indel=1, subs=2)
+We assign the substitution cost to 2 and the indel cost to 1.
+
+```{r, results='hold'}
+# OM with CONSTANT subcosts (OM with indel=1, subs=2)
 Matrix.OM.Const <- seqdist(seqObj2, method="OM", indel=1, sm="CONSTANT")
-#display matrix
+# Display matrix
 print(Matrix.OM.Const[1:5,1:5])
 ```
 
-4)  Plot the first 2 sequences and check that the OM distance is the number of non matching positions between them.
+The diagonal is 0 because the cost of keeping the sequence as it is 0. The elements outside the diagonal represent the cost to transform a sequence into another.
+
+4) Plot the first 2 sequences and check that the OM distance is the number of non matching positions between them.
 
 [Sol.]
 
-```{r}
-#display the first 5 sequences, and sequence elements 1-20 (SPS format)
-print(seqObj2[1:2, ], format ="SPS")
-
-# Sequence
-# 1 (SBP,48)
-# 2 (SNP,60)
-
-#All sequences -sequence index plot (sorted - first state)
+```{r, results='hold'}
+# Plot the first 2 sequences
 xtlab=seq(0,60, by=1)
-seqIplot(seqObj2[1:2, ], with.legend="right", main= "First two sequences", 
+seqIplot(seqObj2[1:2, ], with.legend=TRUE, main= "First two sequences", 
          xtlab=xtlab, xlab="age", ylab=NA, yaxis=TRUE, sortv="from.start")
-
-# 48*2 + 12 = 108
+# Display the first 2 sequences (SPS format)
+print(seqObj2[1:2, ], format ="SPS")
 ```
 
-5)  Check data that the LCS distance provides the same (non-normalized) distances as OM with indel=1 and a constant substitution cost of 2
+The OM distance between two sequences reflects the cost to transform one sequence into another. The first two sequences have different states for the first 48 months, then the first sequence stop and the second one continues until the end of the period (60th month). As we assigned the substitution cost to 2 and the indel cost to 1, the cost of transforming the first sequence to the second is 2 for the first 48 months and 1 for the last 12 months. The final cost is $48*2 + 12 = 108$, as it can also be seen from the previous matrix (elements [1,2] and [2,1] are 108).
+
+5) Check data that the LCS distance provides the same (non-normalized) distances as OM with constant costs.
 
 [Sol.]
 
-```{r}
-#Longest common sub-sequence
-Matrix.LCS <- seqdist(seqObj2,method="LCS")
-#display matrix
+```{r, results='hold'}
+# Longest common sub-sequence
+Matrix.LCS <- seqdist(seqObj2, method="LCS")
+# Display matrix
 print(Matrix.LCS[1:5,1:5])
+```
 
-#Compare
+```{r, results='hold'}
+# Compare
 print(Matrix.OM.Const[1:5,1:5])
 ```
 
-6)  Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs)
+6) Define a substitution cost matrix reflecting what (according to your prior knowledge) are the distances between two states (i.e. customize state-dependent substitution costs)
 
 [Sol.]
 
 We start by calculating the transition matrix, rounded to the 3rd decimal:
-```{r}
+
+```{r, results='hold'}
 round(seqtrate(seqObj2),3)
 ```
 
 We will try to reflect the ordinal character of this matrix by:
 
 * setting the cost of remaining in the same state as 0
-
-* the higher expected cost will be 10 (since dividing 1 by the transition probability would give us an `Inf`)
-
+* the highest expected cost will be 10 (since dividing 1 by the transition probability would give us an `Inf`)
 * the higher the probability, the lower the cost.
-
 * for all other costs, we subtract the 3rd decimal of the transition probability to the maximum cost
 
 We get the following state-dependent subcost matrix:
 
-
-```{r}
-#OM with customized state-dependent subcosts 
+```{r, results='hold'}
+# OM with customized state-dependent subcosts 
 submatrix <- matrix(c( 0,10,9,2,10,10,
                        10,0,10,10,6,10,
                        10,10,0,10,10,6,
                        4,10,10,0,10,1,
                        10,6,10,10,0,5,
                        10,10,6,10,10,0), nrow = 6, ncol = 6, byrow = TRUE)
-
-print(submatrix)
 ```
 
-
-7)  Compute the OM dissimilarity matrix using the previously derived substitution. Set the indel cost as half the maximum substitution cost.
+7) Compute the OM dissimilarity matrix using the previously derived substitution. Set the indel cost as half the maximum substitution cost.
 
 [Sol.]
 
-```{r}
+```{r, results='hold'}
+# OM dissimilarity matrix
 Matrix.OM.State.dep <- seqdist(seqObj2, method="OM", indel=5, sm=submatrix)
-#display matrix
+# Display matrix
 print(Matrix.OM.State.dep[1:5,1:5])
 ```
 
-8)  From the previously computed OM dissimilarity matrix, create a hierarchical cluster tree object with Ward method. Display the hierarchical tree
+8) From the previously computed OM dissimilarity matrix, create a hierarchical cluster tree object with Ward method. Display the hierarchical tree.
 
 [Sol.]
 
-```{r}
-# cluster sequences using the OM distances with state-dependent costs and Ward method
+```{r, fig.height=6.5}
+# Cluster sequences using the OM distances with state-dependent costs and Ward method
 ward.OM <- hclust(as.dist(Matrix.OM.State.dep), method = "ward.D2")
-
-###dendogram
-# plot basic dendograms
+# Dendogram
 plot(ward.OM, labels=FALSE) 
 ```
 
-9)  Calculate appropriate cluster cut-off criteria. Assess what is an empirically optimal cluster solution.
+9) Calculate appropriate cluster cut-off criteria. Assess what is an empirically optimal cluster solution.
 
 [Sol.]
 
-```{r}
-### Generate an object with 1-10 cluster solutions for each prior anal
+We computed several clustering quality measures for a range of numbers of groups (2 until 10 clusters) and retrieved the three best solutions according to each quality measure.
+
+```{r, results='hold'}
+# Generate an object with 1-10 cluster solutions
 wardrange.OM <- as.clustrange(ward.OM, diss=Matrix.OM.State.dep, ncluster=10)
-
-### show cluster cut-off measure values - indicate three optimal cluster solutions 
+# Show cluster cut-off measure values - indicate three optimal cluster solutions 
 summary(wardrange.OM, max.rank=3)
+```
 
-### plot ASW, HGSD and PBC 
-plot(wardrange.OM, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+According to most of the cluster quality criteria, 2 or 5 cluster solutions are first best empirical fits. The same information can be plotted and used to identify the best number of groups.
+
+```{r, fig.height=6}
+plot(wardrange.OM, norm="zscore", main="Indel cost = 5")
 ```
 
 10) Select the six-cluster solution from the Ward analysis, check cluster consistency, and label the clusters by looking at the full sequence index plots (or the relative frequency version) by cluster.
 
 [Sol.]
 
-```{r}
-### store cluster solutions with best empirical fits
-#OM
-wardrange.OM.6 <- cutree(ward.OM , k=6)
+Let's first check cluster consistency.
 
-### cluster consistency (plot silhouette widths)
-#OM 5-cluster solution
+```{r}
+# Store 6 cluster solutions 
+wardrange.OM.6 <- cutree(ward.OM , k=6)
+# Cluster consistency (plot silhouette widths)
 silh.OM.6 <- silhouette(wardrange.OM.6, dmatrix = Matrix.OM.State.dep)
-summary(silh.OM.6)
-plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA, 
+#summary(silh.OM.6)
+plot(silh.OM.6, main= "Silhouette - OM 6 cluster, indel = 5", border=NA, 
      col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
+```
+
+According to the silhouettes, the individuals are well matched to their own cluster. Only in the first cluster the individuals seems to be not coherently classified. The averaged silhouette width indicates an overall coherence of the clusters (ASW=0.68).  
+
+We then labelled the clusters by looking at the full sequence index plot by cluster. In order to avoid overplotting, we sorted the sequences according to their distance to the most representative sequence, defined by the neighborhood density.
+
+```{r, fig.height=10}
+# Generate a variable that contains the OM distance of each sequence to repseq1
+repseq1 <- seqrep(seqObj2, diss=Matrix.OM.State.dep, criterion="density", nrep=1)
+OMdistRepseq <- seqdist(seqObj2, refseq = repseq1, method = "OM", 
+                        indel=5, sm=submatrix) 
+# Define the cluster variable
+cl.6fac <- factor(wardrange.OM.6, labels = paste("Type", 1:6))
+# Plot the full sequence index plot
+seqIplot(seqObj2, group=cl.6fac, with.legend=TRUE, 
+         main= "All sequences", xtlab=xtlab, xlab="Time (months)", 
+         ylab=NA, yaxis=TRUE, border=NA, sortv=OMdistRepseq)
+```
+
+We can identify the following patterns:
+
+* Cluster 1 - Single parents (shorter sequences): individuals who had a child b/ separation, remain single for 2-3 years after separation and then are not followed anymore
+
+* Cluster 2 - Childless single entering in a union: individuals who are single and childless entering in an union and remaining childless
+
+* Cluster 3 - Parents ever single: individuals who had a child b/ separation and remain single over the whole period
+
+* Cluster 4: Childless single entering in a union and having a child
+
+* Cluster 5 - Single parents entering a union: single individuals who had a child b/ separation and entered a union before two years after separation
+
+* Cluster 6 - Single becoming parents: childless single or single who already had a child b/ separation having a child approximately one year after separation
+
+We can also look at the relative frequency plot. 
+
+```{r, fig.height=3}
+# Compute cluster specific matrix distances (OM 6-cluster solution)
+Matrix.OM.1 <- seqdist(seqObj2[wardrange.OM.6 == 1,], method="OM", sm=submatrix)
+Matrix.OM.2 <- seqdist(seqObj2[wardrange.OM.6 == 2,], method="OM", sm=submatrix)
+Matrix.OM.3 <- seqdist(seqObj2[wardrange.OM.6 == 3,], method="OM", sm=submatrix)
+Matrix.OM.4 <- seqdist(seqObj2[wardrange.OM.6 == 4,], method="OM", sm=submatrix)
+Matrix.OM.5 <- seqdist(seqObj2[wardrange.OM.6 == 5,], method="OM", sm=submatrix)
+Matrix.OM.6 <- seqdist(seqObj2[wardrange.OM.6 == 6,], method="OM", sm=submatrix)
+
+# Compute the cluster specific relative frequency sequence index plots (OM 6-cluster solution)
+par(mfrow=c(5,5))
+seqplot.rf(seqObj2[wardrange.OM.6 == 1,], diss=Matrix.OM.1, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.6 == 2,], diss=Matrix.OM.2, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.6 == 3,], diss=Matrix.OM.3, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.6 == 4,], diss=Matrix.OM.4, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.6 == 5,], diss=Matrix.OM.5, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.6 == 6,], diss=Matrix.OM.6, k=100, xtlab=xtlab, yaxis=FALSE)
 ```
 
 11) Repeat steps 8-10 using an OM with transition rates as substitution costs, and 1 as indel costs.
@@ -443,66 +512,78 @@ plot(silh.OM.6, main= "Silhouette - OM 6 cluster", border=NA,
 
 Since we are already using the transition rates matrix as a proxy of substitution costs, now we are lowering the indel cost from 5 to 1 and comparing results.
 
-```{r}
-Matrix.OM.State.dep.indel1 <- seqdist(seqObj2, method="OM", indel=1, sm=submatrix)
-#display matrix
-
-# cluster sequences using the OM distances with state-dependent costs and Ward method
-ward.OM.indel1 <- hclust(as.dist(Matrix.OM.State.dep.indel1), method = "ward.D2")
-
-
-### Generate an object with 1-10 cluster solutions for each prior anal
-wardrange.OM.indel1 <- as.clustrange(ward.OM.indel1, diss=Matrix.OM.State.dep.indel1, ncluster=10)
-
-
-### store cluster solutions with best empirical fits
-# OM
-wardrange.OM.6.indel1 <- cutree(ward.OM.indel1 , k=6)
-
-### cluster consistency (plot silhouette widths)
-# OM 6-cluster solution
-silh.OM.6.indel1 <- silhouette(wardrange.OM.6.indel1, dmatrix = Matrix.OM.State.dep.indel1)
-
+```{r, fig.height=6.5}
+# OM dissimilarity matrix
+Matrix.OM.TRATE <- seqdist(seqObj2, method="OM", indel=1, sm="TRATE")
+# Cluster sequences using the OM distances with state-dependent costs and Ward method
+ward.OM.TRATE <- hclust(as.dist(Matrix.OM.TRATE), method = "ward.D2")
+# Dendogram
+plot(ward.OM.TRATE, labels=FALSE) 
 ```
 
+```{r, fig.height=6}
+# Generate an object with 1-10 cluster solutions for each prior anal
+wardrange.OM.T <- as.clustrange(ward.OM.TRATE, diss=Matrix.OM.TRATE, ncluster=10)
+plot(wardrange.OM.T, norm="zscore", main="Indel cost = 1")
+```
 
-12) Compare the results between the OM and the DHD approaches
+By lowering the indel costs, we have a more clear indication that the best fit is obtained with 6 clusters. 
+
+```{r}
+# Store cluster 6 cluster solution 
+wardrange.OM.T6 <- cutree(ward.OM.TRATE, k=6)
+# Cluster consistency (plot silhouette widths)
+silh.OM.T6 <- silhouette(wardrange.OM.T6, dmatrix = Matrix.OM.TRATE)
+#summary(silh.OM.T6)
+plot(silh.OM.T6, main= "Silhouette - OM 6 cluster, indel = 1", border=NA, 
+     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "#383838"))
+```
+By chosing again the solution with 6 clusters, also the average silhouette improve ($0.72$).
+
+We understand that if we use the transition rates matrix as a substitution matrix cost, we need lower indel costs than usual to have better fitting for clustering.
+
+12) Compare the results between the OM and the OM with transition rates as substitution costs, and 1 as indel costs approaches.
 
 [Sol.]
 
+Let's look at the full sequence index plot by cluster. 
 
-By lowering the indel costs, we get the following best fit for number of clusters:
-```{r, fig.cap= "Indel cost = 5"}
-### plot ASW, HGSD and PBC: indel cost = 5
-plot(wardrange.OM, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+```{r, fig.height=10}
+# Generate a variable that contains the OM distance of each sequence to repseq1
+repseq2 <- seqrep(seqObj2, diss=Matrix.OM.TRATE, criterion="density", nrep=1)
+OM.T.distRepseq <- seqdist(seqObj2, refseq = repseq2, method = "OM", 
+                        indel=1, sm="TRATE") 
+# Define the cluster variable
+cl.6fac2 <- factor(wardrange.OM.T6, labels = paste("Type", 1:6))
+# Plot the full sequence index plot
+seqIplot(seqObj2, group=cl.6fac2, with.legend=TRUE, 
+         main= "All sequences", xtlab=xtlab, xlab="Time (months)", 
+         ylab=NA, yaxis=TRUE, border=NA, sortv=OM.T.distRepseq)
 ```
 
-```{r, fig.cap= "Indel cost = 1"}
-### plot ASW, HGSD and PBC: indel cost = 1
-plot(wardrange.OM.indel1, stat=c("ASW", "HGSD", "PBC"), norm="zscore")
+We can also look at the relative frequency plot. 
+
+```{r, fig.height=3}
+# Compute cluster specific matrix distances (OM 6-cluster solution)
+Matrix.OM.TRATE.1 <- seqdist(seqObj2[wardrange.OM.T6 == 1,], method="OM", sm="TRATE")
+Matrix.OM.TRATE.2 <- seqdist(seqObj2[wardrange.OM.T6 == 2,], method="OM", sm="TRATE")
+Matrix.OM.TRATE.3 <- seqdist(seqObj2[wardrange.OM.T6 == 3,], method="OM", sm="TRATE")
+Matrix.OM.TRATE.4 <- seqdist(seqObj2[wardrange.OM.T6 == 4,], method="OM", sm="TRATE")
+Matrix.OM.TRATE.5 <- seqdist(seqObj2[wardrange.OM.T6 == 5,], method="OM", sm="TRATE")
+Matrix.OM.TRATE.6 <- seqdist(seqObj2[wardrange.OM.T6 == 6,], method="OM", sm="TRATE")
+
+# Compute the cluster specific relative frequency sequence index plots (OM 6-cluster solution)
+par(mfrow=c(5,5))
+seqplot.rf(seqObj2[wardrange.OM.T6 == 1,], diss=Matrix.OM.TRATE.1, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.T6 == 2,], diss=Matrix.OM.TRATE.2, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.T6 == 3,], diss=Matrix.OM.TRATE.3, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.T6 == 4,], diss=Matrix.OM.TRATE.4, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.T6 == 5,], diss=Matrix.OM.TRATE.5, k=100, xtlab=xtlab, yaxis=FALSE)
+seqplot.rf(seqObj2[wardrange.OM.T6 == 6,], diss=Matrix.OM.TRATE.6, k=100, xtlab=xtlab, yaxis=FALSE)
 ```
-
-When indel costs = 5 the best fit seems to be around 5 clusters, and when we lower the indel costs to 1, the best fit seems to be around 6 clusters.
-
-
-If we force the solution to be a 6-cluster one, we get the following silhouette fittings:
-
-```{r}
-### cluster consistency: indel cost = 5
-plot(silh.OM.6, main= "Silhouette - OM 6 cluster, indel = 5", border=NA, 
-     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
-```
-
-```{r, fig.cap= "Silhoutte Indel cost = 1"}
-### cluster consistency: indel cost = 1
-plot(silh.OM.6.indel1, main= "Silhouette - OM 6 cluster, indel = 1", border=NA, 
-     col=c("#E2E2E2", "#D3D3D3", "#B8B8B8", "#969696", "#707070", "black"))
-```
-
-When we have indel costs = 5, the first cluster does not have the best fitting. But when we lower the costs down to 1, the 6-cluster solution is a much better fitting.
-
-We understand that if we use the transition rates matrix as a substitution matrix cost, we need lower indel costs than usual to have better fitting for clustering.
 
 
 
 ## References
+
+
