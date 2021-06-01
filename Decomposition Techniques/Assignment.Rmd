@@ -264,8 +264,740 @@ decomp
 
 ### Use the linear integral model to decompose the change in the standard deviation of the age-at-death distribution and life expectancy by age and cause of death for 3 countries you might be interested in (over time or between them). Interpret the results of life expectancy alongside standard deviation. Make it interesting. You can use data from HCoD, HMD, WHO, GBD.
 
+In this exercise, we aim to see  the changes in the standard deviation of the age-at-death distribution and life expectancy by age and cause of death in Latvia, Russia and Poland from the Soviet Union dissolution to becoming independent states.Since the impact of macrolevel societal changes can take time to be observed in demographic behavior,we decided to look at the change from 1990 to 2010.We will use the data from the Human Mortality Database (HMD) and the Cause of Death Database (CDD). As requested, we benefited from the Horiuchi and colleagues' (2008) linear integral decomposition model to decompose the changes in standard deviation and life expectancy. First we will look at it only by age and then with cause of morality as well. 
+
+```{r pressure, echo=FALSE}
+#Loading the packages
+library(ggplot2)
+library(DemoDecomp)
+library(HMDHFDplus)
+library(demography)
+library(tidyverse)
+setwd("~/Desktop")
+load('Decomp_Data_L4.RData')
+source('Functions_4.R')
+
+```
+
+We first needed to arrange the dataset to make it ready for decomposition. The code for this is avaiable on the rmd. 
+```{r}
+# Reading the data and arranging them 
+
+##Latvia
+#Deaths and Exposures
+latvia.death <- readHMDweb(CNTRY="LVA",item="Deaths_5x1",
+                           username="ozgelifozer@gmail.com",password="10ekim1966",fixup=T)
+  
+latvia.expo <- readHMDweb(CNTRY="LVA",item="Exposures_5x1",
+                          username="ozgelifozer@gmail.com",password="10ekim1966",fixup=T)
+
+latvia.death <- latvia.death %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Death = Male)
+
+latvia.expo <- latvia.expo %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Exposure = Male)
+
+latvia <- left_join(latvia.death, latvia.expo, by = c("Year", "Age"))
+
+rm(latvia.expo)
+rm(latvia.death)
+
+#1990 
+latvia.90 <- subset(latvia, Year ==1990)
+latvia.90 <- latvia.90 %>% 
+  mutate(Death = ifelse(latvia.90$Age == 85, sum(latvia.90[latvia.90$Age %in% c(85:110),]$Death), latvia.90$Death),
+         Exposure = ifelse(latvia.90$Age == 85, sum(latvia.90[latvia.90$Age %in% c(85:110),]$Exposure), latvia.90$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+
+#2010
+latvia.10 <- subset(latvia, Year ==2010)
+latvia.10 <- latvia.10 %>% 
+  mutate(Death = ifelse(latvia.10$Age == 85, sum(latvia.10[latvia.10$Age %in% c(85:110),]$Death), latvia.10$Death),
+         Exposure = ifelse(latvia.10$Age == 85, sum(latvia.10[latvia.10$Age %in% c(85:110),]$Exposure), latvia.10$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+
+rm(latvia)
+#Cause of death 
+latvia.cod <- read.csv("~/Downloads/LVA_m_short_idr.csv")
+latvia.cod.90 <- latvia.cod %>%
+  filter(sex==1, year==1990,) %>%
+  select( - c(sex, list, agf))
+
+latvia.cod.10 <- latvia.cod %>%
+  filter(sex==1, year==2010,) %>%
+  select( - c(sex, list, agf))
 
 
+## Data Wrangling Cause of Death Latvia - to change it to a vector and delete the useelss rows
+#1990
+latvia.c.90 <- as.data.frame(t(latvia.cod.90))
+latvia.c.90 <- as.data.frame(lapply(latvia.c.90, as.numeric))
+colnames(latvia.c.90) <- latvia.c.90[1,]
+latvia.c.90 <- latvia.c.90[2:20,] 
+latvia.c.90$Age <- c(0,1,seq(5,85,5))
+latvia.c.90$Year <- 1990
+latvia.c.90[,c(2:17)] <- latvia.c.90[,c(2:17)]/1000000
+latvia.c.90<- latvia.c.90[,c(2:19)]
+row.names(latvia.c.90) <- NULL 
+#2010
+latvia.c.10 <- as.data.frame(t(latvia.cod.10))
+latvia.c.10 <- as.data.frame(lapply(latvia.c.10, as.numeric))
+colnames(latvia.c.10) <- latvia.c.10[1,]
+latvia.c.10 <- latvia.c.10[2:20,] 
+latvia.c.10$Age <- c(0,1,seq(5,85,5))
+latvia.c.10$Year <- 1990
+latvia.c.10[,c(2:17)] <- latvia.c.10[,c(2:17)]/1000000
+latvia.c.10<- latvia.c.10[,c(2:19)]
+row.names(latvia.c.10) <- NULL 
+
+rm(latvia.cod)
+rm(latvia.cod.10)
+rm(latvia.cod.90)
+
+##Russia
+#Deaths and Exposures
+russia.death <- readHMDweb(CNTRY="RUS",item="Deaths_5x1", 
+                        username= "ozgelifozer@gmail.com", password="10ekim1966", fixup=T)
+russia.expo <- readHMDweb(CNTRY="RUS",item="Exposures_5x1",
+                          username="ozgelifozer@gmail.com",password="10ekim1966",fixup=T)
+
+russia.death <- russia.death %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Death = Male)
+
+russia.expo <- russia.expo %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Exposure = Male)
+
+russia <- left_join(russia.death, russia.expo, by = c("Year", "Age"))
+
+#1990
+russia.90 <- subset(russia, Year ==1990)
+russia.90 <- russia.90 %>% 
+  mutate(Death = ifelse(russia.90$Age == 85, sum(russia.90[russia.90$Age %in% c(85:110),]$Death), russia.90$Death),
+         Exposure = ifelse(russia.90$Age == 85, sum(russia.90[russia.90$Age %in% c(85:110),]$Exposure), russia.90$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+#2010
+russia.10 <- subset(russia, Year ==2010)
+russia.10  <- russia.10  %>% 
+  mutate(Death = ifelse(russia.10 $Age == 85, sum(russia.10 [russia.10 $Age %in% c(85:110),]$Death), russia.10$Death),
+         Exposure = ifelse(russia.10 $Age == 85, sum(russia.10 [russia.10 $Age %in% c(85:110),]$Exposure), russia.10$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+
+rm(russia)
+rm(russia.death)
+rm(russia.expo)
+
+#Cause of death 
+russia.cod <- read.csv("~/Downloads/RUS_m_short_idr.csv")
+russia.cod.90 <- russia.cod %>%
+  filter(sex==1, year==1990,) %>%
+  select( - c(sex, list, agf))
+
+russia.cod.10 <- russia.cod %>%
+  filter(sex==1, year==2010,) %>%
+  select( - c(sex, list, agf))
+
+#2010
+russia.c.10 <- as.data.frame(t(russia.cod.10 ))
+russia.c.10 <- as.data.frame(lapply(russia.c.10, as.numeric))
+colnames(russia.c.10) <- russia.c.10[1,]
+russia.c.10 <- russia.c.10[2:20,] 
+russia.c.10$Age <- c(0,1,seq(5,85,5))
+russia.c.10$Year <- 1990
+russia.c.10[,c(2:17)] <- russia.c.10[,c(2:17)]/1000000
+russia.c.10<- russia.c.10[,c(2:19)]
+row.names(russia.c.10) <- NULL 
+#1990
+russia.c.90 <- as.data.frame(t(russia.cod.90))
+russia.c.90 <- as.data.frame(lapply(russia.c.90, as.numeric))
+colnames(russia.c.90) <- russia.c.90[1,]
+russia.c.90 <- russia.c.90[2:20,] 
+russia.c.90$Age <- c(0,1,seq(5,85,5))
+russia.c.90$Year <- 1990
+russia.c.90[,c(2:17)] <- russia.c.90[,c(2:17)]/1000000
+russia.c.90<- russia.c.90[,c(2:19)]
+row.names(russia.c.90) <- NULL 
+
+rm(russia.cod)
+rm(russia.cod.10)
+rm(russia.cod.90)
+
+##Poland 
+#Deaths and Exposures
+poland.death <- readHMDweb(CNTRY="POL",item="Deaths_5x1", 
+                        username= "ozgelifozer@gmail.com", password="10ekim1966",
+                        fixup=T)
+poland.expo <-  readHMDweb(CNTRY="POL",item="Exposures_5x1",
+                           username="ozgelifozer@gmail.com",password="10ekim1966",fixup=T)
+
+poland.death <- poland.death %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Death = Male)
+
+poland.expo <- poland.expo %>% 
+  select("Year", "Age", "Male") %>% 
+  rename(Exposure = Male)
+
+poland <- left_join(poland.death, poland.expo, by = c("Year", "Age"))
+
+#1990
+poland.90 <- subset(poland, Year ==1990)
+poland.90  <- poland.90  %>% 
+  mutate(Death = ifelse(poland.90$Age == 85, sum(poland.90[poland.90 $Age %in% c(85:110),]$Death), poland.90$Death),
+         Exposure = ifelse(poland.90 $Age == 85, sum(poland.90[poland.90 $Age %in% c(85:110),]$Exposure), poland.90$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+
+#2010
+poland.10 <- subset(poland, Year ==2010)
+poland.10  <- poland.10  %>% 
+  mutate(Death = ifelse(poland.10$Age == 85, sum(poland.10[poland.10 $Age %in% c(85:110),]$Death), poland.10$Death),
+         Exposure = ifelse(poland.10 $Age == 85, sum(poland.10[poland.10 $Age %in% c(85:110),]$Exposure), poland.10$Exposure),
+         mx = Death /Exposure) %>% 
+  filter(Age < 90) %>% 
+  select(Year, Age, mx)
+
+rm(poland)
+rm(poland.death)
+rm(poland.expo)
+
+#Cause of death 
+poland.cod <- read.csv("~/Downloads/POL_m_short_idr.csv")
+poland.cod.90 <- poland.cod %>%
+  filter(sex==1, year==1990,) %>%
+  select( - c(sex, list, agf))
+
+poland.cod.10 <- poland.cod %>%
+  filter(sex==1, year==2010,) %>%
+  select( - c(sex, list, agf))
+
+#2010
+poland.c.10 <- as.data.frame(t(poland.cod.10 ))
+poland.c.10 <- as.data.frame(lapply(poland.c.10 , as.numeric))
+colnames(poland.c.10 ) <- poland.c.10[1,]
+poland.c.10  <- poland.c.10 [2:20,] 
+poland.c.10 $Age <- c(0,1,seq(5,85,5))
+poland.c.10 $Year <- 1990
+poland.c.10 [,c(2:17)] <- poland.c.10 [,c(2:17)]/(1000000)
+poland.c.10 <- poland.c.10 [,c(2:19)]
+row.names(poland.c.10) <- NULL 
+#1990
+poland.c.90 <- as.data.frame(t(poland.cod.90))
+poland.c.90<- as.data.frame(lapply(poland.c.90, as.numeric))
+colnames(poland.c.90) <- poland.c.90[1,]
+poland.c.90 <- poland.c.90[2:20,] 
+poland.c.90$Age <- c(0,1,seq(5,85,5))
+poland.c.90$Year <- 1990
+poland.c.90[,c(2:17)] <- poland.c.90[,c(2:17)]/1000000
+poland.c.90<- poland.c.90[,c(2:19)]
+row.names(poland.c.90) <- NULL 
+
+rm(poland.cod)
+rm(poland.cod.10)
+rm(poland.cod.90)
+```
+
+```{r}
+#load some functions and some info for graphs
+source('Functions_4.R')
+
+#we need a function for the standard deviation of the age at death distribution and life expectancy
+#Here are the all the functions we need for the exercises. 
+e0.frommx <- function(nmx =  mx, sex=1, age = c(0, 1, seq(5, 85, 5)), nax = NULL){
+  n   <- c(diff(age), 999)
+  
+  if (is.null(nax)) {
+    nax <- 0.5 * n
+    if (n[2] == 4) {
+      if (sex == 1) {
+        if (nmx[1] >= 0.107) {
+          nax[1] <- 0.33
+          nax[2] <- 1.352
+        }
+        else {
+          nax[1] <- 0.045 + 2.684 * nmx[1]
+          nax[2] <- 1.651 - 2.816 * nmx[1]
+        }
+      }
+      if (sex == 2) {
+        if (nmx[1] >= 0.107) {
+          nax[1] <- 0.35
+          nax[2] <- 1.361
+        }
+        else {
+          nax[1] <- 0.053 + 2.8 * nmx[1]
+          nax[2] <- 1.522 - 1.518 * nmx[1]
+        }
+      }
+    }
+  }
+  nqx          <- (n * nmx)/(1 + (n - nax) * nmx)
+  nqx          <- c(nqx[-(length(nqx))], 1)
+  nqx[nqx > 1] <- 1
+  
+  npx <- 1 - nqx
+  lx <- cumprod(c(1, npx))
+  ndx <- -diff(lx)
+  lxpn <- lx[-1]
+  nLxpn <- n * lxpn + ndx * nax
+  nLx <- c(nLxpn[-length(nLxpn)], lxpn[length(lxpn)-1]/nmx[length(nmx)])
+  Tx <- rev(cumsum(rev(nLx)))
+  lx <- lx[1:length(age)]
+  ex <- Tx/lx
+  e0 <- ex[1]
+  
+  return(e0)
+}
+
+Decomp <-function (func, rates1, rates2, N, ...) {
+  y1 <- func(rates1, ...)
+  y2 <- func(rates2, ...)
+  d <- rates2 - rates1
+  n <- length(rates1)
+  delta <- d/N
+  x <- rates1 + d * matrix(rep(0.5:(N - 0.5)/N, length(rates1)), 
+                           byrow = TRUE, ncol = N)
+  cc <- matrix(0, nrow = n, ncol = N)
+  for (j in 1:N) {
+    for (i in 1:n) {
+      z <- rep(0, n)
+      z[i] <- delta[i]/2
+      cc[i, j] <- func((x[, j] + z), ...) - func((x[, j] - 
+                                                    z), ...)
+    }
+  }
+  return(rowSums(cc))
+}
+
+sd.frommx <- function(nmx =  mx, sex=1, age = c(0, 1, seq(5, 85, 5)), nax = NULL){
+  n   <- c(diff(age), 999)
+  
+  if (is.null(nax)) {
+    nax <- 0.5 * n
+    if (n[2] == 4) {
+      if (sex == 1) {
+        if (nmx[1] >= 0.107) {
+          nax[1] <- 0.33
+          nax[2] <- 1.352
+        }
+        else {
+          nax[1] <- 0.045 + 2.684 * nmx[1]
+          nax[2] <- 1.651 - 2.816 * nmx[1]
+        }
+      }
+      if (sex == 2) {
+        if (nmx[1] >= 0.107) {
+          nax[1] <- 0.35
+          nax[2] <- 1.361
+        }
+        else {
+          nax[1] <- 0.053 + 2.8 * nmx[1]
+          nax[2] <- 1.522 - 1.518 * nmx[1]
+        }
+      }
+    }
+  }
+  nqx          <- (n * nmx)/(1 + (n - nax) * nmx)
+  nqx          <- c(nqx[-(length(nqx))], 1)
+  nqx[nqx > 1] <- 1
+  
+  npx <- 1 - nqx
+  lx <- cumprod(c(1, npx))
+  ndx <- -diff(lx)
+  lxpn <- lx[-1]
+  nLxpn <- n * lxpn + ndx * nax
+  nLx <- c(nLxpn[-length(nLxpn)], lxpn[length(lxpn)-1]/nmx[length(nmx)])
+  Tx <- rev(cumsum(rev(nLx)))
+  lx <- lx[1:length(age)]
+  ex <- Tx/lx
+  nax[length(nax)] <- ex[length(ex)]
+  vx <- sum(ndx*(age+nax-ex[1L])^2)
+  sd <- sqrt(vx)
+  return(sd)
+}
+
+sdfrommxc <- function(mxcvec,sex=1){
+  dim(mxcvec) <- c(19,length(mxcvec)/19)
+  mx          <- rowSums(mxcvec)
+  sd.frommx(mx,sex)
+}
+
+#Saving the years as vectors 
+#Russia
+russia.mx1 <- russia.90$mx
+russia.mx2 <- russia.10$mx
+
+#Poland
+poland.mx1 <- poland.90$mx
+poland.mx2 <- poland.10$mx
+
+#Latvia 
+latvia.mx1 <- latvia.90$mx
+latvia.mx2 <- latvia.10$mx
+
+#Now we can perfom the decomposition
+#This is for Russia from 1990 to 2010
+russia.results <- horiuchi(func = e0.frommx, pars1 = russia.mx1, pars2 = russia.mx2,N = 100)
+russia.results
+
+#This is for Poland from 1990 to 2010
+poland.results <- horiuchi(func = e0.frommx, pars1 = poland.mx1, pars2 = poland.mx2,N = 100)
+poland.results
+#This is for Latvia from 1990 to 2010
+latvia.results <- horiuchi(func = e0.frommx, pars1 = latvia.mx1, pars2 = latvia.mx2,N = 100)
+latvia.results
+
+#original
+russia.original <- e0.frommx(russia.mx2) - e0.frommx(russia.mx1)
+
+latvia.original <- e0.frommx(latvia.mx2) - e0.frommx(latvia.mx1)
+
+poland.original <- e0.frommx(poland.mx2) - e0.frommx(poland.mx1)
+
+#with the once obtained with the decomposition
+#with decomp
+russia.with.decomp <- sum(russia.results)
+
+latvia.with.decomp <- sum(latvia.results)
+
+poland.with.decomp <- sum(poland.results)
+
+#RUSSIA
+#Just do the difference and you will get the error term
+russia.original
+###[1] -0.7273611
+russia.with.decomp
+###[1] -0.7273611
+#error
+russia.with.decomp - russia.original
+## [1] 0.00000002265514
+
+#POLAND
+#Just do the difference and you will get the error term
+poland.original
+###[1] 5.942051
+poland.with.decomp
+###[1] 5.942051
+#error
+poland.with.decomp - poland.original
+## [1] 0
+
+#LATVIA 
+#Just do the difference and you will get the error term
+latvia.original
+###[1] 3.715123
+latvia.with.decomp
+###[1] 3.715122
+#error
+latvia.with.decomp - latvia.original
+## [1] -5.74513e-07
+
+#Finally, graph and interpret the results.
+#now graph results
+#labels for age-groups 
+age_names<-as.factor(c("0"="0","01"="01-04","05"="05-09","10"="10-14","15"="15-19","20"="20-24",
+                       "25"="25-29","30"="30-34","35"="35-39","40"="40-44","45"="45-49",
+                       "50"="50-54","55"="55-59","60"="60-64","65"="65-69","70"="70-74",
+                       "75"="75-79","80"="80-84","85"="85+"))     
+
+```
+
+The graphs 
+```{r}
+##Russia Graph 
+ggplot()+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010' ))+
+  geom_bar(aes(x = age_names, y= russia.results), stat = "identity", position = "stack")
+#Latvia Graph
+ggplot()+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010' ))+
+  geom_bar(aes(x = age_names, y= latvia.results), stat = "identity", position = "stack")
+#Poland Graph 
+ggplot()+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010' ))+
+  geom_bar(aes(x = age_names, y= poland.results), stat = "identity", position = "stack")
+```
+
+Unlike the graph for Russia, Latvia and Poland shows that there has been overall a positive change in the life expactancy.In all of the countries, the age group that has experienced the highest gain in life expectancy is the 0-5 ages. This is expected considering the increase in availability of communicable disease treatment for the infants and children. Russia shows a substantial decrease in life expectancy for the middle age groups. It should be noted that there are big differences between Russian males and females and we are only observing males here. The increase in alcohol consumtopn and smoking can be a reason for that and additionally the economic and political instability was much prolonged in the case of Russia after the dissolution of Soviet Union, and these can also be considered as causes of changes in the life expectancy. 
+
+We now extend our findings to cause of death decomposition to see which cause of death plays major role in the life expectancy changes in Latvia, Russia and Poland from 1990 t0 2010. 
+
+```{r}
+### Exercise 5 - Extending to cause specific results
+source('Functions_5.R')
+
+#we need age-cause specific mortality rates in each period
+
+#Russia
+COD1.russia <- as.matrix(russia.c.90[,1:16])
+COD2.russia <- as.matrix(russia.c.10[,1:16])
+
+#Latvia
+COD1.latvia <- as.matrix(latvia.c.90[,1:16])
+COD2.latvia <- as.matrix(latvia.c.10[,1:16])
+
+#Poland
+COD1.poland <- as.matrix(poland.c.90[,1:16])
+COD2.poland  <- as.matrix(poland.c.10[,1:16])
+
+#load some functions and some info for graphs
+source('Functions_5.R')
+
+e0frommxc <- function(mxcvec,sex=1){
+  dim(mxcvec) <- c(19,length(mxcvec)/19)
+  mx <- rowSums(mxcvec)
+  e0.frommx(mx,sex)
+}
+#Now we can perfom the decomposition
+#Russia results
+results.c.russia <- horiuchi(func = e0frommxc, pars1 = c(COD1.russia), pars2 = c(COD2.russia), N = 100)
+
+#Latvia Results 
+results.c.latvia <- horiuchi(func = e0frommxc, pars1 = c(COD1.latvia), pars2 = c(COD2.latvia), N = 100)
+
+#Poland Results 
+results.c.poland <- horiuchi(func = e0frommxc, pars1 = c(COD1.poland), pars2 = c(COD2.poland), N = 100)
+
+#RUSSIA 
+#Go back to a matrix
+dim(results.c.russia) <- dim(COD1.russia)
+results.c.russia
+#original
+original.c.russia <- e0frommxc(COD2.russia) - e0frommxc(COD1.russia)
+#with decomp
+with.decomp.c.russia <- sum(results.c.russia)
+
+original.c.russia
+## [1] 3.198322
+with.decomp.c.russia
+## [1] 3.198322
+#error
+with.decomp.c.russia - original.c.russia
+## [1] -6.621032e-08
+
+
+#LATVIA
+#Go back to a matrix
+dim(results.c.latvia) <- dim(COD1.latvia)
+results.c.latvia
+#original
+original.c.latvia <- e0frommxc(COD2.latvia) - e0frommxc(COD1.latvia)
+#with decomp
+with.decomp.c.latvia <- sum(results.c.latvia)
+original.c.latvia
+## [1] 6.118467
+with.decomp.c.latvia
+## [1] 6.118466
+#error
+with.decomp.c.latvia - original.c.latvia
+## [1] -8.141512e-07
+
+
+#POLAND
+#Go back to a matrix
+dim(results.c.poland) <- dim(COD1.poland)
+results.c.poland
+#original
+original.c.poland <- e0frommxc(COD2.poland) - e0frommxc(COD1.poland)
+#with decomp
+with.decomp.c.poland <- sum(results.c.poland)
+
+original.c.poland
+## [1] 11.57746
+with.decomp.c.poland
+## [1] 11.57744
+#error
+with.decomp.c.poland - original.c.poland
+## [1] -1.934737e-05
+
+cause_names<-c("1"="Infectious diseases", 
+               "2"="Neoplasm",
+               "3"="Diseases of blood & blood-forming organs",
+               "4"="Endocrine, nutritional & metabolic diseases",
+               "5"="Mental & behavioral disorders",
+               "6"= "Diseases of nervous system & sense organs",
+               "7"="Heart diseases",
+               "8"="Cerebrovascular disease",
+               "9"="Other circulatory disorders",
+               "10"="Acute respiratory diseases", 
+               "11" = "Other respiratory diseases",
+               "12" = "Diseases of digestive system", 
+               "13" = "Diseases of skin & musculoskeletal system",
+               "14" = "Genitourinary diseases & complications of pregnancy+childbirth", 
+               "15" = "Perinatal conditions & malformations", 
+               "16" = "External causes")
+```
+
+
+The graphs for the life expectancies decomposed by age and cause of death are below; 
+```{r}
+# RUSSIA DATASET WRANGLING AND THE GRAPH 
+#Do some data handling to have a nice dataset
+results.c.russia <- data.frame(results.c.russia)
+colnames(results.c.russia) <- cause_names
+results.c.russia$Age <- c(0,1,seq(5,85,5))
+rownames(results.c.russia) <- age_names
+results.c.russia <- gather(data = results.c.russia,key = Cause,value = Contribution,-Age)
+#now graph results
+#Russia
+ggplot(data=results.c.russia, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010 in Russia' ))+
+  geom_bar(stat = "identity", position = "stack")
+
+
+# LATVIA DATASET WRANGLING AND THE GRAPH 
+#Do some data handling to have a nice dataset
+results.c.latvia <- data.frame(results.c.latvia)
+colnames(results.c.latvia) <- cause_names
+results.c.latvia$Age <- c(0,1,seq(5,85,5))
+rownames(results.c.latvia) <- age_names
+results.c.latvia <- gather(data = results.c.latvia,key = Cause,value = Contribution,-Age)
+#now graph results
+#Latvia
+ggplot(data=results.c.latvia, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010 in Latvia' ))+
+  geom_bar(stat = "identity", position = "stack")
+
+
+# POLAND DATASET WRANGLING AND THE GRAPH 
+#Do some data handling to have a nice dataset
+results.c.poland <- data.frame(results.c.poland)
+colnames(results.c.poland) <- cause_names
+results.c.poland$Age <- c(0,1,seq(5,85,5))
+rownames(results.c.poland) <- age_names
+results.c.poland <- gather(data = results.c.poland,key = Cause,value = Contribution,-Age)
+#now graph results
+#Poland
+ggplot(data=results.c.poland, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ e[0] ~'1990-2010 in Poland' ))+
+  geom_bar(stat = "identity", position = "stack")
+```
+
+These set of graphs show the change in life expectancy decomposed by age and cause of death. For the all the countries, we can see that as suspected from the first graphs, the increase in the life expectancy at earlier ages is mostly from perinatal conditions and malformations. For the Russian case, the middle age groups had a decrease in life expectancy and the cause of death seemed to show that this is due to a rise in heart diseases. This can be due to change in alcohol and smoking habits as in Soviet Union, Gorbachov had campaigned against alcohol consumption and tobacco usage. For Poland, we observe that below age 55, there has been a decrease in death from external causes and for later ages there is a decrease for heart diseases so these are the main causes of deaths that contributed to the increase life expectancies in these age categories. For Latvia, between age 10 and 55, the main contributors to the change are again in external causes. These can be attributed to the stabilization of political, social and economical conditions for Latvia and Poland. 
+
+Now we can look at lifespan variation by calculating the standard deviation. 
+```{r}
+### NOW FOR LIFESPAN VARIATION 
+
+
+#Now we can perfom the decomposition
+results.sd.russia <- horiuchi(func = sdfrommxc, pars1 = c(COD1.russia), pars2 = c(COD2.russia), N = 100)
+
+results.sd.latvia <- horiuchi(func = sdfrommxc, pars1 = c(COD1.latvia), pars2 = c(COD2.latvia), N = 100)
+
+results.sd.poland<- horiuchi(func = sdfrommxc, pars1 = c(COD1.poland), pars2 = c(COD2.poland), N = 100)
+
+#RUSSIA
+#Go back to a matrix
+dim(results.sd.russia) <- dim(COD1.russia)
+#original
+original.sd.russia <- sdfrommxc(COD2.russia) - sdfrommxc(COD1.russia)
+#with the ones obtained with the decomposition
+#with decomp
+with.decomp.sd.russia <- sum(results.sd.russia)
+
+original.sd.russia
+## [1] -4.108706
+with.decomp.sd.russia
+## -4.108705
+#error
+with.decomp.sd.russia - original.sd.russia
+## [1] 1.251437e-06
+
+
+#LATVIA 
+#Go back to a matrix
+dim(results.sd.latvia) <- dim(COD1.latvia)
+#original
+original.sd.latvia <- sdfrommxc(COD2.latvia) - sdfrommxc(COD1.latvia)
+#with the ones obtained with the decomposition
+#with decomp
+with.decomp.sd.latvia <- sum(results.sd.latvia)
+
+original.sd.latvia
+## [1] -3.647308
+with.decomp.sd.latvia
+## [1] -3.647304
+#error
+with.decomp.sd.latvia - original.sd.latvia
+## [1] 3.980185e-06
+
+
+#POLAND
+#Go back to a matrix
+dim(results.sd.poland) <- dim(COD1.poland)
+#original
+original.sd.poland <- sdfrommxc(COD2.poland) - sdfrommxc(COD1.poland)
+#with the ones obtained with the decomposition
+#with decomp
+with.decomp.sd.poland <- sum(results.sd.poland)
+
+original.sd.poland 
+## [1] -3.81884
+with.decomp.sd.poland
+## [1] -3.818833
+#error
+with.decomp.sd.poland- original.sd.poland
+## [1] 7.661509e-06
+```
+
+```{r}
+## RUSSIA DATASET WRANGLING AND GRAPH 
+#Do some data handling to have a nice dataset
+results.sd.russia <- data.frame(results.sd.russia)
+colnames(results.sd.russia) <- cause_names
+results.sd.russia$Age <- c(0,1,seq(5,85,5))
+rownames(results.sd.russia) <- age_names
+results.sd.russia <- gather(data = results.sd.russia,key = Cause,value = Contribution,-Age)
+#Finally, graph and interpret the results.
+#now graph results
+ggplot(data=results.sd.russia, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ sd[0] ~'1990-2010 in Russia' ))+
+  geom_bar(stat = "identity", position = "stack")
+
+
+## LATVIA DATASET WRANGLING AND GRAPH 
+#Do some data handling to have a nice dataset
+results.sd.latvia <- data.frame(results.sd.latvia)
+colnames(results.sd.latvia) <- cause_names
+results.sd.latvia$Age <- c(0,1,seq(5,85,5))
+rownames(results.sd.latvia) <- age_names
+results.sd.latvia <- gather(data = results.sd.latvia,key = Cause,value = Contribution,-Age)
+#Finally, graph and interpret the results.
+#now graph results
+ggplot(data=results.sd.latvia, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ sd[0] ~'1990-2010 in Latvia' ))+
+  geom_bar(stat = "identity", position = "stack")
+
+
+
+## POLAND DATASET WRANGLING AND GRAPH 
+#Do some data handling to have a nice dataset
+results.sd.poland <- data.frame(results.sd.poland)
+colnames(results.sd.poland) <- cause_names
+results.sd.poland$Age <- c(0,1,seq(5,85,5))
+rownames(results.sd.poland) <- age_names
+results.sd.poland <- gather(data = results.sd.poland,key = Cause,value = Contribution,-Age)
+#Finally, graph and interpret the results.
+#now graph results
+ggplot(data=results.sd.poland, aes(x=as.factor(Age), y=Contribution, fill=Cause))+
+  ggtitle(bquote(~'Change in '~ sd[0] ~'1990-2010' ))+
+  geom_bar(stat = "identity", position = "stack")
+```
+
+These last plots are for the changes in the standard deviation of the age-at-death distribution decomposed by age and cause of death for Russia, Poland and Latvia. We can observed that for Russian males, the main contributors for the decrease in people ages less than 5 are perinatal conditions and acute respiratory diseases. For the people aged more than 60, this seems to be heart diseases. For Latvia, the main contributor for the ages between 10 and 50 were external causes while for people above 50, the decrease is due to decrease in neoplasm and increase is due to heart diseases and cerebrovascular diseases. For Poland, there does not seem to be one main contributor for the changes in ages between 10 and 70. However, above 70 the main causes of deaths are increase in heart diseases, circulatory disorders and cerebrovascular disease. Overall, we can say that the increase observed in the selected post communist countries are mostly in the 0-5 ages. This can be due to multiple reasons such as development in medicine during these times and increase in availability of early child care. However, it is possible to say that there does not seem to be a homogenous pattern of change in life expectancy by ages and causes of death in these three countries.
 
 
 
