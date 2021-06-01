@@ -77,20 +77,16 @@ library(tidyverse)
 library(HMDHFDplus)
 
 
-
 # Check countries
 getHFDcountries()
 
-
 # Downloading data for 3 countries: Spain, Bulgaria, Korea
-
 
 # Spain
 spain_birth <- readHFDweb(CNTRY = "ESP",
                     item = "birthsTR",
                     username = "gonzalo.fce@gmail.com",
                     password = "fermat31416")
-
 
 spain_exposure <- readHFDweb(CNTRY = "ESP",
                           item = "exposTR",
@@ -102,7 +98,6 @@ cze_birth <- readHFDweb(CNTRY = "CZE",
                           item = "birthsTR",
                           username = "gonzalo.fce@gmail.com",
                           password = "fermat31416")
-
 
 cze_exposure <- readHFDweb(CNTRY = "CZE",
                              item = "exposTR",
@@ -116,75 +111,72 @@ kor_birth <- readHFDweb(CNTRY = "KOR",
                         username = "gonzalo.fce@gmail.com",
                         password = "fermat31416")
 
-
 kor_exposure <- readHFDweb(CNTRY = "KOR",
                            item = "exposTR",
                            username = "gonzalo.fce@gmail.com",
                            password = "fermat31416")
+```
 
 
+```{r}
 # Wrangling time
 
 # Spain
 spain_birth2 <- spain_birth %>% 
-                  filter(OpenInterval == FALSE) %>% 
+                  filter(Age %in% c(13:54)) %>% 
                   group_by(Year, Age) %>% 
-                  summarise(Births = sum(Total, na.rm = TRUE))
+                  summarise(Births = sum(Total, na.rm = TRUE)) %>%
+                  ungroup()
 
 spain_exposure2 <- spain_exposure %>% 
-                  filter(OpenInterval == FALSE) %>% 
+                  filter(Age %in% c(13:54)) %>% 
                   group_by(Year, Age) %>% 
-                  summarise(Exposure = sum(Exposure, na.rm = TRUE))
+                  summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
+                  ungroup()
 
 
 # Czechia
 cze_birth2 <- cze_birth %>% 
-  filter(OpenInterval == FALSE) %>% 
-  group_by(Year, Age) %>% 
-  summarise(Births = sum(Total, na.rm = TRUE))
+              filter(Age %in% c(13:54)) %>% 
+              group_by(Year, Age) %>% 
+              summarise(Births = sum(Total, na.rm = TRUE)) %>%
+              ungroup()
 
 cze_exposure2 <- cze_exposure %>% 
-  filter(OpenInterval == FALSE) %>% 
-  group_by(Year, Age) %>% 
-  summarise(Exposure = sum(Exposure, na.rm = TRUE))
+                  filter(Age %in% c(13:54)) %>% 
+                  group_by(Year, Age) %>% 
+                  summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
+                  ungroup()
 
 # Korea
 kor_birth2 <- kor_birth %>% 
-  filter(OpenInterval == FALSE) %>% 
-  group_by(Year, Age) %>% 
-  summarise(Births = sum(Total, na.rm = TRUE))
+              filter(Age %in% c(13:54)) %>% 
+              group_by(Year, Age) %>% 
+              summarise(Births = sum(Total, na.rm = TRUE)) %>%
+              ungroup()
 
 kor_exposure2 <- kor_exposure %>% 
-  filter(OpenInterval == FALSE) %>% 
-  group_by(Year, Age) %>% 
-  summarise(Exposure = sum(Exposure, na.rm = TRUE))
-
-
+                filter(Age %in% c(13:54)) %>% 
+                group_by(Year, Age) %>% 
+                summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
+                ungroup()
 
 
 # All together now
 spain <- spain_exposure2 %>% left_join(spain_birth2, by = c("Year", "Age"))
-
 czechia <- cze_exposure2 %>% left_join(cze_birth2, by = c("Year", "Age"))
-
 korea <- kor_exposure2 %>% left_join(kor_birth2, by = c("Year", "Age"))
 
-# Deleting what we don't use anymore
-rm(spain_birth, spain_birth2,
-   spain_exposure, spain_exposure2,
-   cze_birth, cze_birth2,
-   cze_exposure, cze_exposure2,
-   kor_birth, kor_birth2,
-   kor_exposure, kor_exposure2)
 
+```
+
+
+```{r}
 # All together in 1 data.frame
 spain$cty <- "Spain"
 czechia$cty <- "Czechia"
 korea$cty <- "Korea"
-
 challenge2 <- rbind(spain, czechia, korea)
-
-
 
 # Some plotting
 challenge2 %>%
@@ -196,6 +188,74 @@ challenge2 %>%
   ggplot(aes(x=Year, y = TFR, color = cty)) + geom_line() +
   theme_bw()
 ```
+
+
+
+```{r}
+# Input: exposures and deaths for A and B
+# Output: ASCDRs, CDRs, CDR(A)-CDR(B), compositional diff, ASR diff
+
+stand.decom <- function(P.A, B.A, P.B, B.B){
+  
+  # CRUDE RATES
+  A.crude <- sum(B.A) / sum(P.A)
+  B.crude <- sum(B.B) / sum(P.B)
+  Diff.crude <- A.crude - B.crude
+  # age distribution of country A and B
+  C.A <- P.A / sum(P.A)
+  C.B <- P.B / sum(P.B)
+  # age-specific fertility rate in country A and B
+  F.A <- B.A / P.A
+  F.B <- B.B / P.B
+  # average age distribution
+  C.ave <- (C.A + C.B)/2
+  
+  #### DECOMPOSITION OF DIFFERENCES BETWEEN RATES
+  comp.diff <- sum((C.A - C.B) * ((F.A + F.B)/2))
+  ASR.diff <- sum((F.A - F.B) * C.ave)
+  
+  # preparing the outcomes
+  outcome <- c(  Diff.crude = Diff.crude,
+                 Diff.comp = comp.diff,
+                 Diff.rates = ASR.diff)
+  # giving the outcomes
+  return(outcome)
+}
+```
+
+
+```{r}
+decomp <- matrix(NA,11,3)
+
+for(i in c(2007:2017)){
+  
+  spain_birth2a <- spain_birth2 %>% 
+    filter(Year==i) %>% pull(Births)
+  spain_birth2b <- spain_birth2 %>% 
+    filter(Year==i+1) %>% pull(Births)
+  
+  spain_exposure2a <- spain_exposure2 %>% 
+    filter(Year==i) %>% pull(Exposure)
+  spain_exposure2b <- spain_exposure2 %>% 
+    filter(Year==(i+1)) %>% pull(Exposure)
+  
+  # standardization + decomposition 
+  out <- stand.decom(P.A = spain_exposure2a, B.A = spain_birth2a,
+                     P.B = spain_exposure2b, B.B = spain_birth2b)
+  
+  for(j in 1:3){ decomp[i-2006,j] <- out[[j]] }
+  
+}
+
+decomp <- as.data.frame(decomp)
+colnames(decomp) <- c("Diff.crude", "Diff.comp", "Diff.rates")
+rownames(decomp) <- c("2007-2008", "2008-2009", "2009-2010", "2010-2011", 
+                    "2011-2012", "2012-2013", "2013-2014", "2014-2015", 
+                    "2015-2016", "2016-2017", "2017-2018")
+
+decomp
+```
+
 
 
 ## Challenge 4 Use the linear integral model to decompose the change in the standard deviation of the age-at-death distribution and life expectancy by age and cause of death for 3 countries you might be interested in (over time or between them). Interpret the results of life expectancy alongside standard deviation. Make it interesting. You can use data from HCoD, HMD, WHO, GBD.
