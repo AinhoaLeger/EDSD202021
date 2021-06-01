@@ -25,7 +25,9 @@ knitr::opts_chunk$set(echo = TRUE,
 ```
 
 
-## Challenge 1: proof Kitagawa decomposition (1995) wihout interactions
+# Challenge 1
+
+### Proof Kitagawa decomposition (1995) without interactions
 
 Define the difference between the crude death rates as $\Delta$.
 
@@ -69,7 +71,9 @@ Finally, we combine the terms into two:
 The first terms is the difference in age composition weighted by the average age-specific mortality, while the second term is the difference in rate schedules weighted by the average age composition. Therefore, $\Delta$ is equal to the sum of the contribution of age compositional differences and the contribution of rate schedule differences.
 
 
-## Challenge 2: With data on fertility (e.g. HFD) select 3 countries and analyze the change in their crude fertility rate (CFR) in a recent period (10 years) and decompose these changes following Kitagawa's decomposition and describe your results. Then for the most recent period select the two countries (among the 3) with the highest and lowest CFR and decompose their difference and describe your results.
+# Challenge 2
+
+### With data on fertility (e.g. HFD) select 3 countries and analyze the change in their crude fertility rate (CFR) in a recent period (10 years) and decompose these changes following Kitagawa's decomposition and describe your results. Then for the most recent period select the two countries (among the 3) with the highest and lowest CFR and decompose their difference and describe your results.
 
 ```{r}
 # Loading packages
@@ -229,15 +233,11 @@ decomp <- matrix(NA,11,3)
 
 for(i in c(2007:2017)){
   
-  spain_birth2a <- spain_birth2 %>% 
-    filter(Year==i) %>% pull(Births)
-  spain_birth2b <- spain_birth2 %>% 
-    filter(Year==i+1) %>% pull(Births)
+  spain_birth2a <- spain_birth2 %>% filter(Year==i) %>% pull(Births)
+  spain_birth2b <- spain_birth2 %>% filter(Year==i+1) %>% pull(Births)
   
-  spain_exposure2a <- spain_exposure2 %>% 
-    filter(Year==i) %>% pull(Exposure)
-  spain_exposure2b <- spain_exposure2 %>% 
-    filter(Year==(i+1)) %>% pull(Exposure)
+  spain_exposure2a <- spain_exposure2 %>% filter(Year==i) %>% pull(Exposure)
+  spain_exposure2b <- spain_exposure2 %>% filter(Year==(i+1)) %>% pull(Exposure)
   
   # standardization + decomposition 
   out <- stand.decom(P.A = spain_exposure2a, B.A = spain_birth2a,
@@ -257,8 +257,12 @@ decomp
 ```
 
 
+# Challenge 3
 
-## Challenge 4 Use the linear integral model to decompose the change in the standard deviation of the age-at-death distribution and life expectancy by age and cause of death for 3 countries you might be interested in (over time or between them). Interpret the results of life expectancy alongside standard deviation. Make it interesting. You can use data from HCoD, HMD, WHO, GBD.
+
+# Challenge 4 
+
+### Use the linear integral model to decompose the change in the standard deviation of the age-at-death distribution and life expectancy by age and cause of death for 3 countries you might be interested in (over time or between them). Interpret the results of life expectancy alongside standard deviation. Make it interesting. You can use data from HCoD, HMD, WHO, GBD.
 
 
 
