@@ -16,10 +16,11 @@ header-includes:
   - \usepackage{amssymb}
   - \usepackage{amsfonts}
   - \usepackage{xcolor}
+bibliography: challenge2.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,
+knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
 ```
@@ -32,10 +33,15 @@ library(DemoDecomp)
 library(HMDHFDplus)
 library(demography)
 library(tidyverse)
+library(eurostat)
 
 # HFD credentials
-username=""
-password=""
+user <- ""
+pass <- ""
+
+# HMD credentials
+HMD_user=""
+HMD_pass=""
 
 # Directory of the data
 setwd("C:/Users/Ainhoa/Desktop/Github Repositories/EDSD202021/Decomposition Techniques")
@@ -92,167 +98,644 @@ The first terms is the difference in age composition weighted by the average age
 
 ### With data on fertility (e.g. HFD) select 3 countries and analyze the change in their crude fertility rate (CFR) in a recent period (10 years) and decompose these changes following Kitagawa's decomposition and describe your results. Then for the most recent period select the two countries (among the 3) with the highest and lowest CFR and decompose their difference and describe your results.
 
-```{r}
-# Check countries
-getHFDcountries()
+For doing this challenge we decided to take Spain, Korea and Czechia as the three countries to compare. The data was retrieved from the Human Fertility Database (HFD), [@jasilioniene2015methods] using Tim Riffe's package `HMDHFDplus` [@riffe2015reading]. The selected measure is the General Fertility Rate, as defined in page 93 of Preston's book [@preston2000demography]: 
 
-### Downloading data for 3 countries: Spain, Bulgaria, Korea ####
+$$GFR[0,T] = \frac{Births[0,T]}{Person-years-lived[0,T]}$$
+
+We used this measure instead of the Crude Birth Rate to avoid a bias of different age-structure of populations.
+
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+# Downloading data for 3 countries: Spain, Bulgaria, Korea
 
 # Spain
-spain_birth <- readHFDweb(CNTRY = "ESP", item = "birthsTR",
-                    username = username, password = password)
-spain_exposure <- readHFDweb(CNTRY = "ESP", item = "exposTR",
-                          username = username, password = password)
+spain_birth <- readHFDweb(CNTRY = "ESP",
+                    item = "birthsTR",
+                    username = user,
+                    password = pass)
+
+
+spain_exposure <- readHFDweb(CNTRY = "ESP",
+                          item = "exposTR",
+                          username = user,
+                          password = pass)
 
 # Czechia
-cze_birth <- readHFDweb(CNTRY = "CZE", item = "birthsTR",
-                          username = username, password = password)
-cze_exposure <- readHFDweb(CNTRY = "CZE", item = "exposTR",
-                           username = username, password = password)
+cze_birth <- readHFDweb(CNTRY = "CZE",
+                          item = "birthsTR",
+                          username = user,
+                          password = pass)
+
+
+cze_exposure <- readHFDweb(CNTRY = "CZE",
+                             item = "exposTR",
+                             username = user,
+                             password = pass)
+
 
 # Korea
-kor_birth <- readHFDweb(CNTRY = "KOR", item = "birthsTR",
-                        username = username, password = password)
-kor_exposure <- readHFDweb(CNTRY = "KOR", item = "exposTR",
-                           username = username, password = password)
-```
+kor_birth <- readHFDweb(CNTRY = "KOR",
+                        item = "birthsTR",
+                        username = user,
+                        password = pass)
 
 
-```{r}
-## Wrangling time ####
+kor_exposure <- readHFDweb(CNTRY = "KOR",
+                           item = "exposTR",
+                           username = user,
+                           password = pass)
+
+
+# Wrangling time
 
 # Spain
 spain_birth2 <- spain_birth %>% 
-                  filter(Age %in% c(13:54)) %>% 
+                  filter(OpenInterval == FALSE) %>% 
                   group_by(Year, Age) %>% 
-                  summarise(Births = sum(Total, na.rm = TRUE)) %>%
-                  ungroup()
+                  summarise(Births = sum(Total, na.rm = TRUE))
+
 spain_exposure2 <- spain_exposure %>% 
-                  filter(Age %in% c(13:54)) %>% 
+                  filter(OpenInterval == FALSE) %>% 
                   group_by(Year, Age) %>% 
-                  summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
-                  ungroup()
+                  summarise(Exposure = sum(Exposure, na.rm = TRUE))
+
 
 # Czechia
 cze_birth2 <- cze_birth %>% 
-              filter(Age %in% c(13:54)) %>% 
-              group_by(Year, Age) %>% 
-              summarise(Births = sum(Total, na.rm = TRUE)) %>%
-              ungroup()
+  filter(OpenInterval == FALSE) %>% 
+  group_by(Year, Age) %>% 
+  summarise(Births = sum(Total, na.rm = TRUE))
+
 cze_exposure2 <- cze_exposure %>% 
-                  filter(Age %in% c(13:54)) %>% 
-                  group_by(Year, Age) %>% 
-                  summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
-                  ungroup()
+  filter(OpenInterval == FALSE) %>% 
+  group_by(Year, Age) %>% 
+  summarise(Exposure = sum(Exposure, na.rm = TRUE))
 
 # Korea
 kor_birth2 <- kor_birth %>% 
-              filter(Age %in% c(13:54)) %>% 
-              group_by(Year, Age) %>% 
-              summarise(Births = sum(Total, na.rm = TRUE)) %>%
-              ungroup()
+  filter(OpenInterval == FALSE) %>% 
+  group_by(Year, Age) %>% 
+  summarise(Births = sum(Total, na.rm = TRUE))
+
 kor_exposure2 <- kor_exposure %>% 
-                filter(Age %in% c(13:54)) %>% 
-                group_by(Year, Age) %>% 
-                summarise(Exposure = sum(Exposure, na.rm = TRUE)) %>%
-                ungroup()
+  filter(OpenInterval == FALSE) %>% 
+  group_by(Year, Age) %>% 
+  summarise(Exposure = sum(Exposure, na.rm = TRUE))
 
 
 # All together now
 spain <- spain_exposure2 %>% left_join(spain_birth2, by = c("Year", "Age"))
+
 czechia <- cze_exposure2 %>% left_join(cze_birth2, by = c("Year", "Age"))
+
 korea <- kor_exposure2 %>% left_join(kor_birth2, by = c("Year", "Age"))
-```
 
+# Deleting what we don't use anymore
+rm(spain_birth, spain_birth2,
+   spain_exposure, spain_exposure2,
+   cze_birth, cze_birth2,
+   cze_exposure, cze_exposure2,
+   kor_birth, kor_birth2,
+   kor_exposure, kor_exposure2)
 
-```{r}
 # All together in 1 data.frame
 spain$cty <- "Spain"
 czechia$cty <- "Czechia"
 korea$cty <- "Korea"
-challenge2 <- rbind(spain, czechia, korea)
 
+challenge2 <- rbind(spain, czechia, korea)
+```
+
+
+### A glimpse on data and some literature
+
+
+After some data wrangling (code provided), we have the following time series of the GFR for the three countries:
+
+```{r gfr_timeseries, echo=FALSE, message=FALSE}
 # Some plotting
 challenge2 %>%
   filter(Age >= 15, Age <= 49) %>% 
-  mutate(TFR_age = Births/Exposure) %>%
   group_by(cty, Year) %>%
-  summarise(TFR = sum(TFR_age, na.rm = T)) %>% 
+  summarise(GFR = sum(Births, na.rm = T) / sum(Exposure, na.rm = T) * 1000) %>%
   filter(Year >= 2000) %>% 
-  ggplot(aes(x=Year, y = TFR, color = cty)) + geom_line() +
-  theme_bw()
+  ggplot(aes(x=Year, y = GFR, color = cty)) + geom_line(size=1.5) +
+  theme_bw() +
+  labs(color = "Country", 
+       title = "GFR for selected countries",
+       caption = "Source: HFD")
 ```
 
+As we can see, Czechia presents an increasing GFR for the period, contrasting to Korea's GFR which is decreasing and the lowest one for the selected countries. As for Spain, the GFR was increasing until the 2008/9 Financial Crisis, and from that point onward decreases.
+
+Literature suggests that Korea has a decreasing fertility due to socioeconomic factors, especially pertaining to the domestic division of labor and the availability of State help to childcare [@kim2017division; @seo2019low]. The variability of the time series could be related to tempo effects [@yoo2018ultra].
+
+When analyzing Spain, most of literature relates fertility to socioeconomic factors [@barbieri2015rise; @sobotka2011economic]. The GFR curve, with a peak around the Financial Crisis, shows this very clearly.
+
+As for the case of Czechia, the behavior could be related to the country experiencing a Second Demographic Transition after the end of the USSR [@billingsley2010post]. We can also observe that the Financial Crisis impacted the GFR of this country, but the increasing trend remains after the economic recovery [@matysiak2021great].
 
 
-```{r}
-### Function for the Kitagawa decomposition ####
+### Time to Decompose
 
-# Input: exposures and deaths for A and B
-# Output: ASCDRs, CDRs, CDR(A)-CDR(B), compositional diff, ASR diff
+We will be using the Kitagawa decomposition method [@kitagawa1955components] components to unravel changes in composition of the population under analysis from the changes in the rate.
 
-stand.decom <- function(P.A, B.A, P.B, B.B){
+Basically, Kitagawa tells us that a change of any rate `R = A * B` can be decompose in this way [@tonnessen2019declined]:
+
+$$ \Delta R = (\Delta A * \overline{B}) + (\Delta B  * \overline{A}) $$
+
+```{r spain_decomp, echo=FALSE, message=FALSE, results='hide'}
+# Create Kitagawa function
+# Instead of having Mx, now I have ASFR for each age group. t1 and t2 are subsequent years for all ages
+# Using:
+    # Tønnessen, M. (2019). Declined total fertility rate among immigrants and the role of newly arrived women in Norway. European Journal of Population, 1-27.
+    # Canudas-Romo, V. (2003). Decomposition methods in demography. Amsterdam: Rozenberg Publishers.
+
+challenge2 <- challenge2 %>% 
+                mutate(Births = replace_na(Births, 0),
+                        ASFR = Births/Exposure)
+
+
+# Loop Kitagawa on full dataset
+
+# From-to (generalize):
+init_y <- 2000
+end_y <- 2018
+
+
+# Spain
+spain <- challenge2 %>% 
+          filter(cty == "Spain", Year >= init_y)
+
+spain_decom <- data.frame(matrix(NA, nrow = end_y - init_y, ncol = 4))
+names(spain_decom) <- c("Year", "CC", "RC", "true_delta")
+
+spain_decom$Year <- seq(init_y + 1, end_y, by=1)
+spain_decom$cty <- "Spain"
+
+for (i in init_y:(end_y-1)){
+  # Select ASFR for first period
+  ASFR1 <- spain[spain$Year == i,]$ASFR
+  # Select population for first period
+  Nx1 <- spain[spain$Year == i,]$Exposure
+  # Do the same for period 2
+  ASFR2 <- spain[spain$Year == i+1,]$ASFR
+  Nx2 <- spain[spain$Year == i+1,]$Exposure
   
-  # CRUDE RATES
-  A.crude <- sum(B.A) / sum(P.A)
-  B.crude <- sum(B.B) / sum(P.B)
-  Diff.crude <- A.crude - B.crude
-  # age distribution of country A and B
-  C.A <- P.A / sum(P.A)
-  C.B <- P.B / sum(P.B)
-  # age-specific fertility rate in country A and B
-  F.A <- B.A / P.A
-  F.B <- B.B / P.B
-  # average age distribution
-  C.ave <- (C.A + C.B)/2
-  
-  #### DECOMPOSITION OF DIFFERENCES BETWEEN RATES
-  comp.diff <- sum((C.A - C.B) * ((F.A + F.B)/2))
-  ASR.diff <- sum((F.A - F.B) * C.ave)
-  
-  # preparing the outcomes
-  outcome <- c(  Diff.crude = Diff.crude,
-                 Diff.comp = comp.diff,
-                 Diff.rates = ASR.diff)
-  # giving the outcomes
-  return(outcome)
+  spain_decom$CC[i - init_y + 1] <- sum(0.5 * (ASFR2+ASFR1) * ( (Nx2/sum(Nx2)) - (Nx1/sum(Nx1)) ) ) *1000
+  spain_decom$RC[i - init_y + 1] <- sum(0.5 * ( (Nx2/sum(Nx2)) + (Nx1/sum(Nx1)) ) * (ASFR2-ASFR1) ) *1000
+  spain_decom$true_delta[i - init_y + 1] <- sum(ASFR2*Nx2/sum(Nx2)) *1000 - sum(ASFR1*Nx1/sum(Nx1)) *1000
 }
+
+
+# CHECK!!!
+spain_decom$kit_delta <- spain_decom$CC + spain_decom$RC
 ```
 
 
-```{r}
-### Loop to apply the decomposition for consecutive years ####
+```{r cze_decomp, echo=FALSE, message=FALSE, results='hide'}
+# Czechia
+cze <- challenge2 %>% 
+  filter(cty == "Czechia", Year >= init_y)
 
-decomp <- matrix(NA,11,3)
+cze_decom <- data.frame(matrix(NA, nrow = end_y - init_y, ncol = 4))
+names(cze_decom) <- c("Year", "CC", "RC", "true_delta")
 
-for(i in c(2007:2017)){
+cze_decom$Year <- seq(init_y + 1, end_y, by=1)
+cze_decom$cty <- "Czechia"
+
+for (i in init_y:(end_y-1)){
+  # Select ASFR for first period
+  ASFR1 <- cze[cze$Year == i,]$ASFR
+  # Select population for first period
+  Nx1 <- cze[cze$Year == i,]$Exposure
+  # Do the same for period 2
+  ASFR2 <- cze[cze$Year == i+1,]$ASFR
+  Nx2 <- cze[cze$Year == i+1,]$Exposure
   
-  # births and exposures
-  spain_birth2a <- spain_birth2 %>% filter(Year==i) %>% pull(Births)
-  spain_birth2b <- spain_birth2 %>% filter(Year==i+1) %>% pull(Births)
-  
-  spain_exposure2a <- spain_exposure2 %>% filter(Year==i) %>% pull(Exposure)
-  spain_exposure2b <- spain_exposure2 %>% filter(Year==(i+1)) %>% pull(Exposure)
-  
-  # standardization + decomposition 
-  out <- stand.decom(P.A = spain_exposure2a, B.A = spain_birth2a,
-                     P.B = spain_exposure2b, B.B = spain_birth2b)
-  
-  for(j in 1:3){ decomp[i-2006,j] <- out[[j]] }
-  
+  cze_decom$CC[i - init_y + 1] <- sum(0.5 * (ASFR2+ASFR1) * ( (Nx2/sum(Nx2)) - (Nx1/sum(Nx1)) ) ) *1000
+  cze_decom$RC[i - init_y + 1] <- sum(0.5 * ( (Nx2/sum(Nx2)) + (Nx1/sum(Nx1)) ) * (ASFR2-ASFR1) ) *1000
+  cze_decom$true_delta[i - init_y + 1] <- sum(ASFR2*Nx2/sum(Nx2)) *1000 - sum(ASFR1*Nx1/sum(Nx1)) *1000
 }
 
-decomp <- as.data.frame(decomp)
-colnames(decomp) <- c("Diff.crude", "Diff.comp", "Diff.rates")
-rownames(decomp) <- c("2007-2008", "2008-2009", "2009-2010", "2010-2011", 
-                    "2011-2012", "2012-2013", "2013-2014", "2014-2015", 
-                    "2015-2016", "2016-2017", "2017-2018")
 
-decomp
+# CHECK!!!
+cze_decom$kit_delta <- cze_decom$CC + cze_decom$RC
+
 ```
+
+```{r korea_decomp, echo=FALSE, message=FALSE, results='hide'}
+
+# Korea
+kor <- challenge2 %>% 
+  filter(cty == "Korea", Year >= init_y)
+
+kor_decom <- data.frame(matrix(NA, nrow = end_y - init_y, ncol = 4))
+names(kor_decom) <- c("Year", "CC", "RC", "true_delta")
+
+kor_decom$Year <- seq(init_y + 1, end_y, by=1)
+kor_decom$cty <- "Korea"
+
+for (i in init_y:(end_y-1)){
+  # Select ASFR for first period
+  ASFR1 <- kor[kor$Year == i,]$ASFR
+  # Select population for first period
+  Nx1 <- kor[kor$Year == i,]$Exposure
+  # Do the same for period 2
+  ASFR2 <- kor[kor$Year == i+1,]$ASFR
+  Nx2 <- kor[kor$Year == i+1,]$Exposure
+  
+  kor_decom$CC[i - init_y + 1] <- sum(0.5 * (ASFR2+ASFR1) * ( (Nx2/sum(Nx2)) - (Nx1/sum(Nx1)) ) ) *1000
+  kor_decom$RC[i - init_y + 1] <- sum(0.5 * ( (Nx2/sum(Nx2)) + (Nx1/sum(Nx1)) ) * (ASFR2-ASFR1) ) *1000
+  kor_decom$true_delta[i - init_y + 1] <- sum(ASFR2*Nx2/sum(Nx2)) *1000 - sum(ASFR1*Nx1/sum(Nx1)) *1000
+}
+
+
+# CHECK!!!
+kor_decom$kit_delta <- kor_decom$CC + kor_decom$RC
+```
+
+
+The following plot shows the decomposition of the GFR for each country for each of the years observed:
+
+```{r decomp_plot, echo=FALSE, message=FALSE, results='hide'}
+
+# Again, all together:
+
+chall2 <- rbind(spain_decom, cze_decom, kor_decom)
+
+
+# Plotting
+chall2 %>% 
+  pivot_longer(cols=c(RC,CC), names_to = "Kitagawa", values_to = "Delta_GFR") %>% 
+  select(Year, cty, Kitagawa, Delta_GFR) %>% 
+  ggplot(aes(x=Year, y=Delta_GFR, fill=Kitagawa)) + geom_bar(position="stack", stat="identity") +
+  facet_wrap(~cty) +
+  theme_bw() +
+  scale_fill_manual(labels=c("Composition change","Rate change"), values=c("red","blue")) +
+  labs(fill="",
+        title= "Kitagawa decomposition: Czechia, Korea & Spain, 2000-2018",
+        caption = "Source: HFD")
+```
+
+We can observe that the source of change in the GFR for all countries is mostly due to changes in rate and not in population composition. But it is interesting that for both Czechia and Spain, the amount of change due to changes in composition has been increasing during this 2000-2018 period. This is related to the presence of aging populations, a common problem in European countries.
+
+As for Korea, most part of the change in the GFR is related to changes in rate and not in population composition.
+
+
+### Comparing Countries
+
+To finish this challenge, we can also decompose the difference in the GFR of Czechia and Korea. Since Czechia will be used as the second population and this country has experienced increasing GFR during the period, the decomposition should give positive numbers for most of the observed periods.
+
+
+```{r fight, echo=FALSE, message=FALSE, results='hide'}
+##########################################################
+# Now just 2 countries for last year and decompose:
+
+# Korea vs Czechia: Fight!
+
+# Korea
+ASFR1 <- challenge2 %>% ungroup() %>% filter(Year == 2018, cty == "Korea") %>% select(ASFR)
+Nx1 <- challenge2 %>% ungroup() %>% filter(Year == 2018, cty == "Korea") %>% select(Exposure)
+# Czechia
+ASFR2 <- challenge2 %>% ungroup() %>% filter(Year == 2018, cty == "Czechia") %>% select(ASFR)
+Nx2 <- challenge2 %>% ungroup() %>% filter(Year == 2018, cty == "Czechia") %>% select(Exposure)
+
+# Fight!
+cze_vs_kor_CC <- sum(0.5 * (ASFR2+ASFR1) * ( (Nx2/sum(Nx2)) - (Nx1/sum(Nx1)) ) )
+cze_vs_kor_RC <- sum(0.5 * ( (Nx2/sum(Nx2)) + (Nx1/sum(Nx1)) ) * (ASFR2-ASFR1) )
+cze_vs_kor_delta_GFR <- sum(ASFR2*Nx2/sum(Nx2)*1000) - sum(ASFR1*Nx1/sum(Nx1)*1000)
+cze_vs_kor_kitagawa <- cze_vs_kor_CC*1000 + cze_vs_kor_RC*1000
+
+
+# Korea vs Czechia, Round 2: Fight!
+fight <- challenge2 %>% 
+  filter(cty %in% c("Czechia","Korea"), Year >= init_y)
+
+fight_decom <- data.frame(matrix(NA, nrow = end_y - init_y, ncol = 4))
+names(fight_decom) <- c("Year", "CC", "RC", "true_delta")
+
+fight_decom$Year <- seq(init_y + 1, end_y, by=1)
+fight_decom$cty <- "Czechia compared to Korea"
+
+for (i in init_y:(end_y-1)){
+  # Select ASFR for first period
+  ASFR1 <- fight %>% ungroup() %>% filter(Year == i, cty == "Korea") %>% select(ASFR)
+  # Select population for first period
+  Nx1 <- fight %>% ungroup() %>% filter(Year == i, cty == "Korea") %>% select(Exposure)
+  # Do the same for period 2
+  ASFR2 <- fight %>% ungroup() %>% filter(Year == i, cty == "Czechia") %>% select(ASFR)
+  Nx2 <- fight %>% ungroup() %>% filter(Year == i, cty == "Czechia") %>% select(Exposure)
+  
+  fight_decom$CC[i - init_y + 1] <- sum(0.5 * (ASFR2+ASFR1) * ( (Nx2/sum(Nx2)) - (Nx1/sum(Nx1)) ) ) *1000
+  fight_decom$RC[i - init_y + 1] <- sum(0.5 * ( (Nx2/sum(Nx2)) + (Nx1/sum(Nx1)) ) * (ASFR2-ASFR1) ) *1000
+  fight_decom$true_delta[i - init_y + 1] <- sum(ASFR2*Nx2/sum(Nx2)) *1000 - sum(ASFR1*Nx1/sum(Nx1)) *1000
+}
+
+
+# CHECK!!!
+fight_decom$kit_delta <- fight_decom$CC + fight_decom$RC
+
+
+```
+
+
+```{r fight_plot, echo=FALSE}
+
+# Plotting
+fight_decom %>% 
+  pivot_longer(cols=c(RC,CC), names_to = "Kitagawa", values_to = "Delta_GFR") %>% 
+  select(Year, cty, Kitagawa, Delta_GFR) %>% 
+  ggplot(aes(x=Year, y=Delta_GFR, fill=Kitagawa)) + geom_bar(position="stack", stat="identity") +
+  theme_bw() + 
+  scale_fill_manual(labels=c("Composition change","Rate change"), values=c("red","blue")) +
+  labs(fill="",
+        title= "Kitagawa decomposition: Czechia vs Korea, 2000-2018",
+        caption = "Source: HFD")
+
+```
+
+The plot shows that the difference in GFR between the two countries is related more to changes in rates, rather than in population composition. But in those years where the change in rates is small, the composition factor plays a major role in explaining this differences.
 
 
 # Challenge 3
+
+### Get (any source) age-specific prevalences and apply the Sullivan method in R. Follow the practical guide if you want to and be aware of the method's limitations (e.g. same mortality schedule).
+
+```{r}
+options(scipen = 10)
+```
+
+Check the names of the countries and the the items available in the HMDweb.  
+
+```{r}
+# getHMDcountries()
+# getHMDitemavail(CNTRY="LTU",username=HMD_user, password=HMD_pass)
+# getHMDitemavail(CNTRY="NLD",username=HMD_user, password=HMD_pass)
+```
+
+We will extract data from Lithuania (LTU) and the Netherlands (NLD), the two European countries with the highest (9.6) and the lowest (3.1) gender gap in life expectancy in 2019 according to Eurostat.
+https://ec.europa.eu/eurostat/statistics-explained/index.php?title=File:Life_expectancy_gender_gap_2021-01.jpg  
+
+We first extract data on Deaths and Exposures by 5 year age group from the HMD for Lithuania and the Netherlands. 
+
+```{r}
+
+## Get the Deaths 5x1 (by 5-year age group and year)
+LTU.Dx <- readHMDweb(CNTRY="LTU",item="Deaths_5x1", 
+                     username=HMD_user, password=HMD_pass, fixup=F)
+NLD.Dx <- readHMDweb(CNTRY="NLD",item="Deaths_5x1", 
+                     username=HMD_user, password=HMD_pass, fixup=F)
+
+## Get the Exposures to risk 5x1 (by 5-year age group and year)
+LTU.Exp <- readHMDweb(CNTRY="LTU",item="Exposures_5x1", 
+                      username=HMD_user, password=HMD_pass, fixup=F)
+NLD.Exp <- readHMDweb(CNTRY="NLD",item="Exposures_5x1", 
+                      username=HMD_user, password=HMD_pass, fixup=F)
+
+
+# We create a data frame of ages allowing to gather the age-groups over 85. 
+Ages <- data.frame(Age = c("0", "1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
+                           "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79",
+                           "80-84", "85-89", "90-94", "95-99", "100-104", "105-109", "110+"),
+                   age = c(0, 1, seq(5, 85, 5), rep(85,5)))
+```
+
+We compute the Age-Specific mortality rates by 5-year age groups from the HMD for each country and sex separately.
+
+```{r}
+
+#### Lithuania mx for both sexes separately with 85+ as open-ended age interval ####
+
+lithuania.Dx2 <- LTU.Dx %>% 
+  filter(Year == 2019) %>% 
+  select(Age, Female, Male) %>% 
+  pivot_longer(cols=c(Female, Male), names_to = "Sex", values_to = "Deaths")
+  
+lithuania.Exp2 <- LTU.Exp %>% 
+  filter(Year == 2019) %>% 
+  select(Age, Female, Male) %>% 
+  pivot_longer(cols=c(Female, Male), names_to = "Sex", values_to = "Exposures")
+
+lithuania.mx <- lithuania.Dx2 %>% 
+  left_join(lithuania.Exp2, by = c("Age", "Sex")) %>% 
+  left_join(Ages) %>% 
+  group_by(Sex, age) %>% 
+  mutate(mx = sum(Deaths)/sum(Exposures)) %>% 
+  ungroup() %>% 
+  # We filter data after 90+ since the rate for mx85+ has already been computed
+  filter(Age != "90-94", Age !="95-99", Age != "100-104", Age != "105-109", Age != "110+") %>% 
+  select(Sex, age, mx)
+
+#### Netherlands mx for both sexes separately with 85+ as open-ended age interval ####
+
+netherlands.Dx2 <- NLD.Dx %>% 
+  filter(Year == 2019) %>% 
+  select(Age, Female, Male) %>% 
+  pivot_longer(cols=c(Female, Male), names_to = "Sex", values_to = "Deaths")
+
+netherlands.Exp2 <- NLD.Exp %>% 
+  filter(Year == 2019) %>% 
+  select(Age, Female, Male) %>% 
+  pivot_longer(cols=c(Female, Male), names_to = "Sex", values_to = "Exposures")
+
+netherlands.mx <- netherlands.Dx2 %>% 
+  left_join(netherlands.Exp2, by = c("Age", "Sex")) %>% 
+  left_join(Ages) %>% 
+  group_by(Sex, age) %>% 
+  mutate(mx = sum(Deaths)/sum(Exposures)) %>% 
+  ungroup() %>% 
+  # We filter data after 90+ since the rate for mx85+ has already been computed
+  filter(Age != "90-94", Age !="95-99", Age != "100-104", Age != "105-109", Age != "110+") %>% 
+  select(Sex, age, mx)
+
+# Deleting intermediate tables 
+rm(lithuania.Dx2, lithuania.Exp2, netherlands.Dx2, netherlands.Exp2)
+
+```
+To apply the Sullivan method, we will use data on self-reported chronic morbidity (i.e. the presence of long-term (chronic) symptoms, health conditions or diseases)   
+https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Chronic_morbidity.  
+This dimension of health is captured by one of the three questions of the Minimum European Health Module (MEHM): “Do you have any long-standing illness or health problem?”.
+THe MEHM is currently implemented in the EU Statistics on Income and Living Conditions (EU-SILC) and the European Health Interview Survey (EHIS)  
+https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Minimum_European_Health_Module_(MEHM) The EU-SILC target population consists of all individuals Individuals aged 16 years old and over living in private households. Hence, people living in collective households and in institutions are generally excluded from the survey. 
+
+Data on chronic morbidity from the EU-SILC is expressed as percentages within the population combining various breakdowns: sex, age-group, labour status, educational attainment level, country of birth, country of citizenship, degree of urbanisation and income quintile (group).  
+https://ec.europa.eu/eurostat/web/health/methodology    
+Since we are only interested un the total population by sex and age-group, we will use the first data-set with labour status.    
+
+We extract the dataset of people having a long-standing illness or health problem, by sex, age and labour status (hlth_silc_04) and get a glimpse on it.
+
+```{r}
+hlth_silc <- get_eurostat("hlth_silc_04", time_format = "num", type ="code")
+
+# Get a glimpse on the data
+glimpse(hlth_silc)
+
+# Check the values for wstatus and age
+unique(hlth_silc$wstatus)
+unique(hlth_silc$age)
+```
+We filter the data to keep only information for Lithuania and the Netherlands in 2009 for each sex separately, as well as the total population (wstatus == POP) and the age values corresponding to a distribution by 10 years age group, since it is the most regular age-grouping across the whole dataset.  
+
+```{r}
+hlth_silc2 <- hlth_silc %>% 
+  filter(time == 2019 & geo %in% c("LT","NL"), wstatus == "POP", sex %in% c("F","M"),
+         age %in% c("Y16-24", "Y25-34", "Y35-44", "Y45-54","Y55-64", "Y65-74", "Y75-84", "Y_GE85")) %>% 
+  select(c(age, sex, geo, values)) %>% 
+  mutate(Sex = if_else(sex == "F", "Female", "Male"), 
+         age_gr = case_when(age == "Y16-24" ~ 15, 
+                            age == "Y25-34" ~ 25, 
+                            age == "Y35-44" ~ 35, 
+                            age == "Y45-54" ~ 45,
+                            age == "Y55-64" ~ 55, 
+                            age == "Y65-74" ~ 65, 
+                            age == "Y75-84" ~ 75, 
+                            TRUE ~ 85), 
+         pix = values/100) %>% 
+  select(-c(age, sex, values))
+
+lithuania.px <- hlth_silc2 %>% 
+  filter(geo == "LT") %>% 
+  select(-geo)
+
+netherlands.px <- hlth_silc2 %>% 
+  filter(geo == "NL") %>% 
+  select(-geo)
+```
+
+Since the death rates are available by 5-year age group, but chronic morbidity prevalence (pix) by 10-year age group, we need to add a correspondence 10-year age group value to the death rates, allowing us to join both tables. We made the assumption that the prevalence is the same for the two 5-year age groups included in each 10-year each group. We also split each dataset by sex.    
+
+```{r}
+# Lithuania data frame with mx and pix for 15-85
+lithuania <- lithuania.mx %>% 
+  mutate(age_gr = case_when(age %in% c(0, 1, 5, 10) ~ 0,
+                            age %in% c(15,20) ~ 15, 
+                            age %in% c(25,30) ~ 25, 
+                            age %in% c(35,40) ~ 35, 
+                            age %in% c(45,50) ~ 45,
+                            age %in% c(55,60) ~ 55, 
+                            age %in% c(65,70) ~ 65, 
+                            age %in% c(75,80) ~ 75, 
+                            age %in% c(75,80) ~ 75, 
+                            TRUE ~ 85)) %>% 
+  left_join(lithuania.px, by= c("Sex", "age_gr")) %>% 
+  filter(age_gr != 0) %>% 
+  select(-age_gr)
+
+# We split the dataset by sex
+lithuania.f <- lithuania %>% 
+  filter(Sex=="Female") %>% select(-Sex) %>% rename(nmx=mx) 
+lithuania.m <- lithuania %>% 
+  filter(Sex=="Male") %>% select(-Sex) %>% rename(nmx=mx) 
+# Netherlands data frame with mx and pix for 15-85
+netherlands <- netherlands.mx %>% 
+  mutate(age_gr = case_when(age %in% c(0, 1, 5, 10) ~ 0,
+                            age %in% c(15,20) ~ 15, 
+                            age %in% c(25,30) ~ 25, 
+                            age %in% c(35,40) ~ 35, 
+                            age %in% c(45,50) ~ 45,
+                            age %in% c(55,60) ~ 55, 
+                            age %in% c(65,70) ~ 65, 
+                            age %in% c(75,80) ~ 75, 
+                            age %in% c(75,80) ~ 75, 
+                            TRUE ~ 85)) %>% 
+  left_join(netherlands.px, by= c("Sex", "age_gr")) %>% 
+  filter(age_gr != 0) %>% 
+  select(-age_gr)
+
+# We split the dataset by sex
+netherlands.f <- netherlands %>% 
+  filter(Sex=="Female") %>% select(-Sex) %>% rename(nmx=mx) 
+netherlands.m <- netherlands %>% 
+  filter(Sex=="Male") %>% select(-Sex) %>% rename(nmx=mx) 
+# Delete original data
+rm(LTU.Dx, LTU.Exp, NLD.Dx, NLD.Exp, hlth_silc, hlth_silc2)
+
+# Delete partial tables
+rm(Ages, lithuania.mx, lithuania.px, lithuania, netherlands.mx, netherlands.px, netherlands)
+```
+
+To apply the Sullivan Method, we will consider the non-presence of chronic morbidity as an indicator of health status. We create a function allowing to compute general Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) above age 15.   
+
+```{r}
+Sullivan <- function(age, nmx, pix){
+  
+  # Assign n and nax values
+  n     <- c(diff(age), 999)
+  nax   <- 0.5 * n  
+  
+  # Computation of the life table e0
+  nqx          <- (n * nmx)/(1 + (n - nax) * nmx)
+  nqx          <- c(nqx[-(length(nqx))], 1)
+  nqx[nqx > 1] <- 1
+  npx          <- 1 - nqx
+  lx           <- cumprod(c(1, npx))
+  ndx          <- -diff(lx)
+  lxpn         <- lx[-1]
+  nLxpn        <- n * lxpn + ndx * nax
+  nLx          <- c(nLxpn[-length(nLxpn)], 
+                    lxpn[length(lxpn)-1]/nmx[length(nmx)])
+  Tx           <- rev(cumsum(rev(nLx)))
+  lx           <- lx[1:length(age)]
+  ex           <- Tx/lx
+  e15           <- ex[1]
+  
+  # Sullivan method (Morbidity-Free Life Expectancy)
+  nLx.MF          <- nLx*(1-pix)
+  Tx.MF           <- rev(cumsum(rev(nLx.MF)))
+  ex.MF           <- (Tx.MF)/lx
+  e15.MF           <- ex.MF[1]  
+  
+  return(data.frame(Age = age,
+                    LE = ex,
+                    MFLE = ex.MF))
+}
+
+```
+We apply the Sullivan function, to each dataset to compute the LE and the MFLE. We merge all datasets in a unique one to plot.
+
+```{r}
+# Lithuania
+MFLE.ltu.f <- Sullivan(age=lithuania.f$age, nmx=lithuania.f$nmx, 
+                       pix=lithuania.f$pix) %>% 
+  mutate(Sex = "Females")
+MFLE.ltu.m <- Sullivan(age=lithuania.m$age, nmx=lithuania.m$nmx, 
+                       pix=lithuania.f$pix)  %>% 
+  mutate(Sex = "Males")
+
+MFLE.ltu <- bind_rows(MFLE.ltu.f, MFLE.ltu.m) %>% 
+  pivot_longer(cols = c("LE", "MFLE"), names_to = "Measure", values_to = "Years") %>% 
+  mutate(Country = "Lithuania")
+
+## Netherlands
+MFLE.nld.f <- Sullivan(age=netherlands.f$age, nmx=netherlands.f$nmx, 
+                       pix=netherlands.f$pix) %>% 
+  mutate(Sex = "Females")
+MFLE.nld.m <- Sullivan(age=netherlands.m$age, nmx=netherlands.m$nmx, 
+                       pix=netherlands.f$pix)  %>% 
+  mutate(Sex = "Males")
+
+MFLE.nld <- bind_rows(MFLE.nld.f, MFLE.nld.m) %>% 
+  pivot_longer(cols = c("LE", "MFLE"), names_to = "Measure", values_to = "Years") %>% 
+  mutate(Country = "Netherlands")
+
+MFLE <- bind_rows(MFLE.ltu, MFLE.nld)
+
+# Remove intermediate tables
+rm("lithuania.f", "lithuania.m", "MFLE.ltu", "MFLE.ltu.f", "MFLE.ltu.m", 
+   "MFLE.nld", "MFLE.nld.f", "MFLE.nld.m", "netherlands.f", "netherlands.m")
+```
+
+We can now plot all together. 
+
+# Remaining Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) by sex in Lithuania and the Netherlands in 2019.  
+
+```{r}
+ggplot(MFLE, aes(x=Age, y = Years, color = Sex, shape = Measure)) +
+  theme_bw() +
+  facet_grid(. ~ Country) +
+  geom_point(size = 4) +
+  scale_x_continuous(breaks = seq(15,85, by=10)) +
+  scale_y_continuous(breaks = seq(0,70, by=10))
+```
 
 
 # Challenge 4 
@@ -277,9 +760,9 @@ We first needed to arrange the dataset to make it ready for decomposition. The c
 
 # Obtain Deaths and Exposures
 latvia.death <- readHMDweb(CNTRY="LVA",item="Deaths_5x1",
-                           username=username,password=password,fixup=T)
+                           username=HMD_user,password=HMD_pass,fixup=T)
 latvia.expo <- readHMDweb(CNTRY="LVA",item="Exposures_5x1",
-                          username=username,password=password,fixup=T)
+                          username=HMD_user,password=HMD_pass,fixup=T)
 
 latvia.death <- latvia.death %>% 
   select("Year", "Age", "Male") %>% 
@@ -367,9 +850,9 @@ row.names(latvia.c.10) <- NULL
 
 # Obtain Deaths and Exposures
 russia.death <- readHMDweb(CNTRY="RUS",item="Deaths_5x1", 
-                        username=username,password=password, fixup=T)
+                        username=HMD_user,password=HMD_pass, fixup=T)
 russia.expo <- readHMDweb(CNTRY="RUS",item="Exposures_5x1",
-                          username=username,password=password,fixup=T)
+                          username=HMD_user,password=HMD_pass,fixup=T)
 
 russia.death <- russia.death %>% 
   select("Year", "Age", "Male") %>% 
@@ -457,9 +940,9 @@ row.names(russia.c.10) <- NULL
 
 # Obtain Deaths and Exposures
 poland.death <- readHMDweb(CNTRY="POL",item="Deaths_5x1", 
-                        username=username,password=password,fixup=T)
+                        username=HMD_user,password=HMD_pass,fixup=T)
 poland.expo <-  readHMDweb(CNTRY="POL",item="Exposures_5x1",
-                           username=username,password=password,fixup=T)
+                           username=HMD_user,password=HMD_pass,fixup=T)
 
 poland.death <- poland.death %>% 
   select("Year", "Age", "Male") %>% 
@@ -849,7 +1332,7 @@ c(with.decomp.c.latvia - original.c.latvia,
 
 The graphs for the life expectancies decomposed by age and cause of death are below.
 
-```{r, fig.height=7}
+```{r, fig.height=6}
 ## Labels ####
 cause_names<-c("1"="Infectious diseases", 
                "2"="Neoplasm",
@@ -982,7 +1465,7 @@ c(with.decomp.sd.latvia - original.sd.latvia,
   with.decomp.sd.poland- original.sd.poland)
 ```
 
-```{r, fig.height=7}
+```{r, fig.height=6}
 ## Data wrangling ####
 
 # Latvia
@@ -1046,6 +1529,7 @@ ggplot(data=results.sd.poland,
 These last plots are for the changes in the standard deviation of the age-at-death distribution decomposed by age and cause of death for Russia, Poland and Latvia. We can observed that for Russian males, the main contributors for the decrease in people ages less than 5 are perinatal conditions and acute respiratory diseases. For the people aged more than 60, this seems to be heart diseases. For Latvia, the main contributor for the ages between 10 and 50 were external causes while for people above 50, the decrease is due to decrease in neoplasm and increase is due to heart diseases and cerebrovascular diseases. For Poland, there does not seem to be one main contributor for the changes in ages between 10 and 70. However, above 70 the main causes of deaths are increase in heart diseases, circulatory disorders and cerebrovascular disease. Overall, we can say that the increase observed in the selected post communist countries are mostly in the 0-5 ages. This can be due to multiple reasons such as development in medicine during these times and increase in availability of early child care. However, it is possible to say that there does not seem to be a homogenous pattern of change in life expectancy by ages and causes of death in these three countries.
 
 
+## References
 
 
 
