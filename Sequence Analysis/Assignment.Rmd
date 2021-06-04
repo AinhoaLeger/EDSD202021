@@ -58,7 +58,7 @@ library(tidyverse)
 data2 <- read.csv("SFS2018_Data2.csv", na.strings=c(".",".a",".b"))
 ```
 
-2)  Define a sequence object with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
+2)  Define a sequence object [@gabadinho2009package] with elements in data columns 2:61 and alphabet 1:6, using the following state names and labels
 
 > 1 SNP "Single, childless",\
 > 2 SBP "Single, child b/separat.",\
@@ -582,6 +582,10 @@ seqplot.rf(seqObj2[wardrange.OM.T6 == 5,], diss=Matrix.OM.TRATE.5, k=100, xtlab=
 seqplot.rf(seqObj2[wardrange.OM.T6 == 6,], diss=Matrix.OM.TRATE.6, k=100, xtlab=xtlab, yaxis=FALSE)
 ```
 
+
+As already mentioned, when using indel cost equal to 1, we are more certain about the number of clusters needed to represent the sequences. At the same time, the silhouette for indel costs equal to 5 is lower (0.68) than for costs equal to 1 (0.72) indicating a worst fitting of the sequences inside each cluster.
+
+When we compare the resulting clusters between the two choices of indel costs, we can observe that clusters 1, 2, 4, 5 and 6 are very much alike between the two options, and the main difference comes when analyzing cluster 3: in our first choice this cluster is single with child before separation, while in the second choice it represents individuals from single to Union, but childless.
 
 
 ## References
