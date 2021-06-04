@@ -473,7 +473,7 @@ Check the names of the countries and the the items available in the HMDweb.
 ```
 
 We will extract data from Lithuania (LTU) and the Netherlands (NLD), the two European countries with the highest (9.6) and the lowest (3.1) gender gap in life expectancy in 2019 according to Eurostat.
-https://ec.europa.eu/eurostat/statistics-explained/index.php?title=File:Life_expectancy_gender_gap_2021-01.jpg  
+<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=File:Life_expectancy_gender_gap_2021-01.jpg  >
 
 We first extract data on Deaths and Exposures by 5 year age group from the HMD for Lithuania and the Netherlands. 
 
@@ -552,13 +552,13 @@ rm(lithuania.Dx2, lithuania.Exp2, netherlands.Dx2, netherlands.Exp2)
 
 ```
 To apply the Sullivan method, we will use data on self-reported chronic morbidity (i.e. the presence of long-term (chronic) symptoms, health conditions or diseases)   
-https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Chronic_morbidity.  
+<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Chronic_morbidity>.  
 This dimension of health is captured by one of the three questions of the Minimum European Health Module (MEHM): “Do you have any long-standing illness or health problem?”.
 THe MEHM is currently implemented in the EU Statistics on Income and Living Conditions (EU-SILC) and the European Health Interview Survey (EHIS)  
-https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Minimum_European_Health_Module_(MEHM) The EU-SILC target population consists of all individuals Individuals aged 16 years old and over living in private households. Hence, people living in collective households and in institutions are generally excluded from the survey. 
+<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Minimum_European_Health_Module_(MEHM)> The EU-SILC target population consists of all individuals Individuals aged 16 years old and over living in private households. Hence, people living in collective households and in institutions are generally excluded from the survey. 
 
 Data on chronic morbidity from the EU-SILC is expressed as percentages within the population combining various breakdowns: sex, age-group, labour status, educational attainment level, country of birth, country of citizenship, degree of urbanisation and income quintile (group).  
-https://ec.europa.eu/eurostat/web/health/methodology    
+<https://ec.europa.eu/eurostat/web/health/methodology>    
 Since we are only interested un the total population by sex and age-group, we will use the first data-set with labour status.    
 
 We extract the dataset of people having a long-standing illness or health problem, by sex, age and labour status (hlth_silc_04) and get a glimpse on it.
@@ -1528,6 +1528,7 @@ ggplot(data=results.sd.poland,
 
 These last plots are for the changes in the standard deviation of the age-at-death distribution decomposed by age and cause of death for Russia, Poland and Latvia. We can observed that for Russian males, the main contributors for the decrease in people ages less than 5 are perinatal conditions and acute respiratory diseases. For the people aged more than 60, this seems to be heart diseases. For Latvia, the main contributor for the ages between 10 and 50 were external causes while for people above 50, the decrease is due to decrease in neoplasm and increase is due to heart diseases and cerebrovascular diseases. For Poland, there does not seem to be one main contributor for the changes in ages between 10 and 70. However, above 70 the main causes of deaths are increase in heart diseases, circulatory disorders and cerebrovascular disease. Overall, we can say that the increase observed in the selected post communist countries are mostly in the 0-5 ages. This can be due to multiple reasons such as development in medicine during these times and increase in availability of early child care. However, it is possible to say that there does not seem to be a homogenous pattern of change in life expectancy by ages and causes of death in these three countries.
 
+\pagebreak
 
 ## References
 
