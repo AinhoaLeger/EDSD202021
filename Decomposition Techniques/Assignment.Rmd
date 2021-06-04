@@ -6,7 +6,7 @@ author:
  - Liliana Patricia Calderon Bernal  
  - Marilyn-Anne Tremblay 
  - Özge Elif Özer
-date: "01/6/2021"
+date: "04/6/2021"
 output: pdf_document
 header-includes: 
   - \renewcommand{\and}{\\}
@@ -20,7 +20,7 @@ bibliography: challenge2.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
+knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       message = FALSE)
 ```
@@ -567,11 +567,11 @@ We extract the dataset of people having a long-standing illness or health proble
 hlth_silc <- get_eurostat("hlth_silc_04", time_format = "num", type ="code")
 
 # Get a glimpse on the data
-glimpse(hlth_silc)
+# glimpse(hlth_silc)
 
 # Check the values for wstatus and age
-unique(hlth_silc$wstatus)
-unique(hlth_silc$age)
+# unique(hlth_silc$wstatus)
+# unique(hlth_silc$age)
 ```
 We filter the data to keep only information for Lithuania and the Netherlands in 2009 for each sex separately, as well as the total population (wstatus == POP) and the age values corresponding to a distribution by 10 years age group, since it is the most regular age-grouping across the whole dataset.  
 
@@ -726,7 +726,7 @@ rm("lithuania.f", "lithuania.m", "MFLE.ltu", "MFLE.ltu.f", "MFLE.ltu.m",
 
 We can now plot all together. 
 
-# Remaining Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) by sex in Lithuania and the Netherlands in 2019.  
+### Remaining Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) by sex in Lithuania and the Netherlands in 2019.  
 
 ```{r}
 ggplot(MFLE, aes(x=Age, y = Years, color = Sex, shape = Measure)) +
