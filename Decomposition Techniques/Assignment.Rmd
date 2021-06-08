@@ -6,7 +6,7 @@ author:
  - Liliana Patricia Calderon Bernal  
  - Marilyn-Anne Tremblay 
  - Özge Elif Özer
-date: "04/6/2021"
+date: "08/6/2021"
 output: pdf_document
 header-includes: 
   - \renewcommand{\and}{\\}
@@ -42,9 +42,6 @@ pass <- ""
 # HMD credentials
 HMD_user=""
 HMD_pass=""
-
-# Directory of the data
-setwd("")
 ```
 
 
@@ -728,13 +725,12 @@ In this exercise, we aim to see  the changes in the standard deviation of the ag
 We will use the data from the Human Mortality Database (HMD) and the Cause of Death Database (CDD). As requested, we benefited from the Horiuchi and colleagues' (2008) linear integral decomposition model to decompose the changes in standard deviation and life expectancy. First we will look at it only by age and then with cause of mortality as well. 
 
 ```{r pressure, echo=FALSE}
-load('Decomp_Data_L4.RData')
 source('Functions_4.R')
 ```
 
 We first needed to arrange the dataset to make it ready for decomposition. The code for this is available on the rmd. 
 
-```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: LATVIA ##########
 
 ## Data All Cause ####
@@ -824,7 +820,7 @@ row.names(latvia.c.10) <- NULL
 ```
 
 
-```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: RUSSIA ##########
 
 ## Data All Cause ####
@@ -914,7 +910,7 @@ row.names(russia.c.10) <- NULL
 ```
 
 
-```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: POLAND ##########
 
 ## Data All Cause ####
@@ -1002,7 +998,7 @@ row.names(poland.c.10) <- NULL
 ```
 
 
-```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 #load some functions and some info for graphs
 source('Functions_4.R')
 
@@ -1021,7 +1017,7 @@ latvia.mx2 <- latvia.10$mx
 ```
 
 
-```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DECOMPOSITION: LIFE EXPECTANCY ##########
 
 ## Decomposition ####
@@ -1059,9 +1055,8 @@ c(latvia.with.decomp - latvia.original,
   poland.with.decomp - poland.original)
 ```
 
-The graphs 
 
-```{r, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide', fig.height=4.4}
 ## Labels for age-groups #### 
 age_names<-as.factor(c("0"="0","01"="01-04","05"="05-09","10"="10-14",
                        "15"="15-19","20"="20-24","25"="25-29",
@@ -1185,7 +1180,7 @@ c(with.decomp.c.latvia - original.c.latvia,
 
 The graphs for the life expectancies decomposed by age and cause of death are below.
 
-```{r, echo=FALSE, message=FALSE, results='hide'}
+```{r, echo=FALSE, message=FALSE, results='hide', fig.height=6}
 ## Labels ####
 cause_names<-c("1"="Infectious diseases", 
                "2"="Neoplasm",
@@ -1318,7 +1313,7 @@ c(with.decomp.sd.latvia - original.sd.latvia,
   with.decomp.sd.poland- original.sd.poland)
 ```
 
-```{r, echo=FALSE, message=TRUE, results='hide'}
+```{r, echo=FALSE, message=TRUE, results='hide', fig.height=6}
 ## Data wrangling ####
 
 # Latvia
