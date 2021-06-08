@@ -458,26 +458,16 @@ The plot shows that the difference in GFR between the two countries is related m
 
 # Challenge 3
 
-### Get (any source) age-specific prevalences and apply the Sullivan method in R. Follow the practical guide if you want to and be aware of the method's limitations (e.g. same mortality schedule).
+### Get (any source) age-specific prevalences and apply the Sullivan method in R. Follow the practical guide if you want to and be aware of the method's limitations (e.g. same mortality schedule).    
 
-```{r}
-options(scipen = 10)
-```
+In this exercise we analyse data from Lithuania and the Netherlands, the two European countries with the highest (9.6) and the lowest (3.1) gender gap in life expectancy in 2019 according to **[Eurostat](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=File:Life_expectancy_gender_gap_2021-01.jpg)**. After checking the items availability for these two countries in the **[Human Mortality Database](https://www.mortality.org/)**, we get data from Lithuania (LTU) and the Netherlands (NLD) using the package `HMDHFDplus` [@riffe2015reading]. We will follow the Practical Guide for Health Expectancy Calculation by the Sullivan Method published by the European Health Expectancy Monitoring Unite (EHEMU) team [@jagger2006health].
 
-Check the names of the countries and the the items available in the HMDweb.  
+First, we extract data on Deaths and Exposures by 5 year age group in 2019 from the HMD for Lithuania and the Netherlands. Then, we compute the Age-Specific mortality rates by 5-year age groups using HMD data for each country and sex separately (cf. the provided code for all the data wrangling procedures).  
+```{r HMD data, echo=FALSE, message=FALSE, results='hide'}
 
-```{r}
 # getHMDcountries()
 # getHMDitemavail(CNTRY="LTU",username=HMD_user, password=HMD_pass)
 # getHMDitemavail(CNTRY="NLD",username=HMD_user, password=HMD_pass)
-```
-
-We will extract data from Lithuania (LTU) and the Netherlands (NLD), the two European countries with the highest (9.6) and the lowest (3.1) gender gap in life expectancy in 2019 according to Eurostat.
-<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=File:Life_expectancy_gender_gap_2021-01.jpg  >
-
-We first extract data on Deaths and Exposures by 5 year age group from the HMD for Lithuania and the Netherlands. 
-
-```{r}
 
 ## Get the Deaths 5x1 (by 5-year age group and year)
 LTU.Dx <- readHMDweb(CNTRY="LTU",item="Deaths_5x1", 
@@ -499,9 +489,7 @@ Ages <- data.frame(Age = c("0", "1-4", "5-9", "10-14", "15-19", "20-24", "25-29"
                    age = c(0, 1, seq(5, 85, 5), rep(85,5)))
 ```
 
-We compute the Age-Specific mortality rates by 5-year age groups from the HMD for each country and sex separately.
-
-```{r}
+```{r Mx LTU and NLD, echo=FALSE, message=FALSE, results='hide'}
 
 #### Lithuania mx for both sexes separately with 85+ as open-ended age interval ####
 
@@ -551,19 +539,14 @@ netherlands.mx <- netherlands.Dx2 %>%
 rm(lithuania.Dx2, lithuania.Exp2, netherlands.Dx2, netherlands.Exp2)
 
 ```
-To apply the Sullivan method, we will use data on self-reported chronic morbidity (i.e. the presence of long-term (chronic) symptoms, health conditions or diseases)   
-<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Chronic_morbidity>.  
-This dimension of health is captured by one of the three questions of the Minimum European Health Module (MEHM): “Do you have any long-standing illness or health problem?”.
-THe MEHM is currently implemented in the EU Statistics on Income and Living Conditions (EU-SILC) and the European Health Interview Survey (EHIS)  
-<https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Minimum_European_Health_Module_(MEHM)> The EU-SILC target population consists of all individuals Individuals aged 16 years old and over living in private households. Hence, people living in collective households and in institutions are generally excluded from the survey. 
 
-Data on chronic morbidity from the EU-SILC is expressed as percentages within the population combining various breakdowns: sex, age-group, labour status, educational attainment level, country of birth, country of citizenship, degree of urbanisation and income quintile (group).  
-<https://ec.europa.eu/eurostat/web/health/methodology>    
-Since we are only interested un the total population by sex and age-group, we will use the first data-set with labour status.    
+To apply the Sullivan method, we use data on **[self-reported chronic morbidity](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Chronic_morbidity)**, i.e. the presence of long-term (chronic) symptoms, health conditions or diseases. This dimension of health is captured by one of the three questions of the **[Minimum European Health Module (MEHM)](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Minimum_European_Health_Module_(MEHM))**: *“Do you have any long-standing illness or health problem?”*. THe MEHM is implemented in the European Health Interview Survey (EHIS) and the EU Statistics on Income and Living Conditions (EU-SILC). We will use data from the former.  
 
-We extract the dataset of people having a long-standing illness or health problem, by sex, age and labour status (hlth_silc_04) and get a glimpse on it.
+The EU-SILC target population consists of all individuals aged 16 years old and over living in private households. Hence, people living in collective households and in institutions are generally excluded from the survey. According to the **[EU-SILC methodology](https://ec.europa.eu/eurostat/web/health/methodology)**,  data on chronic morbidity is expressed as percentages within the population combining various breakdowns: sex, age-group, labour status, educational attainment level, country of birth, country of citizenship, degree of urbanisation and income quantile (group). As we are only interested in the total population by sex and age-group, we use the first data-set with labour status **[(hlth_silc_04)](https://ec.europa.eu/eurostat/databrowser/view/hlth_silc_04/default/table?lang=en)**. 
 
-```{r}
+Using the `eurostat package`, we extract the data of people having a long-standing illness or health problem, by sex, age and labour status and get a glimpse on it.  
+
+```{r Hlth_SILC , echo=FALSE, message=FALSE, results='hide'}
 hlth_silc <- get_eurostat("hlth_silc_04", time_format = "num", type ="code")
 
 # Get a glimpse on the data
@@ -573,9 +556,9 @@ hlth_silc <- get_eurostat("hlth_silc_04", time_format = "num", type ="code")
 # unique(hlth_silc$wstatus)
 # unique(hlth_silc$age)
 ```
-We filter the data to keep only information for Lithuania and the Netherlands in 2009 for each sex separately, as well as the total population (wstatus == POP) and the age values corresponding to a distribution by 10 years age group, since it is the most regular age-grouping across the whole dataset.  
+We filter the data to keep only information for Lithuania and the Netherlands in 2019 for each sex separately, as well as of the total population `(wstatus == POP)` and eight age categories corresponding to a 10 years age group distribution, going from 15-24 years old to 85 years and over. This is the most regular age-grouping classification across the whole dataset.  
 
-```{r}
+```{r Hlth_SILC_Wrangling, echo=FALSE, message=FALSE, results='hide'}
 hlth_silc2 <- hlth_silc %>% 
   filter(time == 2019 & geo %in% c("LT","NL"), wstatus == "POP", sex %in% c("F","M"),
          age %in% c("Y16-24", "Y25-34", "Y35-44", "Y45-54","Y55-64", "Y65-74", "Y75-84", "Y_GE85")) %>% 
@@ -601,9 +584,9 @@ netherlands.px <- hlth_silc2 %>%
   select(-geo)
 ```
 
-Since the death rates are available by 5-year age group, but chronic morbidity prevalence (pix) by 10-year age group, we need to add a correspondence 10-year age group value to the death rates, allowing us to join both tables. We made the assumption that the prevalence is the same for the two 5-year age groups included in each 10-year each group. We also split each dataset by sex.    
+The death rates computed from the HMD are available by 5-year age group, but the chronic morbidity prevalences (pix) obtained from the EU-SILC are only available by 10-year age group. Hence, we need to add a correspondence 10-year age group value to the death rates to join both datasets and continue the calculation. We made the assumption that both 5-year age groups included in each 10-year group (e.g., 25-29 and 30-34 years old) have the same prevalence of chronic morbidity. We split each dataset by sex.    
 
-```{r}
+```{r LTU and NLD by sex, echo=FALSE, message=FALSE, results='hide'}
 # Lithuania data frame with mx and pix for 15-85
 lithuania <- lithuania.mx %>% 
   mutate(age_gr = case_when(age %in% c(0, 1, 5, 10) ~ 0,
@@ -625,6 +608,7 @@ lithuania.f <- lithuania %>%
   filter(Sex=="Female") %>% select(-Sex) %>% rename(nmx=mx) 
 lithuania.m <- lithuania %>% 
   filter(Sex=="Male") %>% select(-Sex) %>% rename(nmx=mx) 
+
 # Netherlands data frame with mx and pix for 15-85
 netherlands <- netherlands.mx %>% 
   mutate(age_gr = case_when(age %in% c(0, 1, 5, 10) ~ 0,
@@ -653,9 +637,9 @@ rm(LTU.Dx, LTU.Exp, NLD.Dx, NLD.Exp, hlth_silc, hlth_silc2)
 rm(Ages, lithuania.mx, lithuania.px, lithuania, netherlands.mx, netherlands.px, netherlands)
 ```
 
-To apply the Sullivan Method, we will consider the non-presence of chronic morbidity as an indicator of health status. We create a function allowing to compute general Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) above age 15.   
+To apply the Sullivan Method, we will consider the non-presence of chronic morbidity as an indicator of good health status. We create the following function allowing to compute both the general Life Expectancy (LE) and the Morbidity Free Life Expectancy (MFLE) above age 15.   
 
-```{r}
+```{r Sullivan, echo = TRUE, message=FALSE}
 Sullivan <- function(age, nmx, pix){
   
   # Assign n and nax values
@@ -671,8 +655,7 @@ Sullivan <- function(age, nmx, pix){
   ndx          <- -diff(lx)
   lxpn         <- lx[-1]
   nLxpn        <- n * lxpn + ndx * nax
-  nLx          <- c(nLxpn[-length(nLxpn)], 
-                    lxpn[length(lxpn)-1]/nmx[length(nmx)])
+  nLx          <- c(nLxpn[-length(nLxpn)], lxpn[length(lxpn)-1]/nmx[length(nmx)])
   Tx           <- rev(cumsum(rev(nLx)))
   lx           <- lx[1:length(age)]
   ex           <- Tx/lx
@@ -684,15 +667,13 @@ Sullivan <- function(age, nmx, pix){
   ex.MF           <- (Tx.MF)/lx
   e15.MF           <- ex.MF[1]  
   
-  return(data.frame(Age = age,
-                    LE = ex,
-                    MFLE = ex.MF))
+  return(data.frame(Age = age, LE = ex, MFLE = ex.MF))
 }
 
 ```
-We apply the Sullivan function, to each dataset to compute the LE and the MFLE. We merge all datasets in a unique one to plot.
+We apply the function to each country and sex specific dataset to compute the LE and the MFLE. Finally we merge all the data in a single data frame, and plot the results.  
 
-```{r}
+```{r LTU and NLD to plot, echo=FALSE, message=FALSE, results='hide'}
 # Lithuania
 MFLE.ltu.f <- Sullivan(age=lithuania.f$age, nmx=lithuania.f$nmx, 
                        pix=lithuania.f$pix) %>% 
@@ -724,18 +705,18 @@ rm("lithuania.f", "lithuania.m", "MFLE.ltu", "MFLE.ltu.f", "MFLE.ltu.m",
    "MFLE.nld", "MFLE.nld.f", "MFLE.nld.m", "netherlands.f", "netherlands.m")
 ```
 
-We can now plot all together. 
-
-### Remaining Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE) by sex in Lithuania and the Netherlands in 2019.  
-
-```{r}
+```{r Plot, , echo=FALSE, message=FALSE, results='hide'}
 ggplot(MFLE, aes(x=Age, y = Years, color = Sex, shape = Measure)) +
   theme_bw() +
   facet_grid(. ~ Country) +
-  geom_point(size = 4) +
+  geom_point(size = 3) +
   scale_x_continuous(breaks = seq(15,85, by=10)) +
-  scale_y_continuous(breaks = seq(0,70, by=10))
+  scale_y_continuous(breaks = seq(0,70, by=10)) + 
+  labs(title = "Life Expectancy (LE) and Morbidity Free Life Expectancy (MFLE)\n\ by sex after age 15 in Lithuania and the Netherlands in 2019.", 
+       caption = "Source: HMD and EU-SILC" )
 ```
+
+As it is shown in the previous graph, Life Expectancy (LE) and Morbidity Free Life expectancy (MFLE) after age 15 were clearly higher in the Netherlands than in Lithuania in 2019, when comparing each combination of sex and type of measure. Regarding the (total) LE after age 15, the gender-gap was greater in Lithuania than in the Netherlands, as it could be expected given the above-mentioned differences in the gender gap in LE at birth (of more than 6 years between both countries). The MFLE was also overall higher in the Netherlands than in Lithuania for both sexes. Nevertheless, when considering the prevalence of chronic morbidities, the gap between sexes seemed to diminish, specially in Lithuania, and almost disappeared at old-ages in both countries. Therefore, when examining not only the average length of life, but the number of years that an individual would expect to live without suffering from chronic diseases the gender gap is nuanced in the countries with the highest and lowest differences between sexes. 
 
 
 # Challenge 4 
