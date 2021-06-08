@@ -734,7 +734,7 @@ source('Functions_4.R')
 
 We first needed to arrange the dataset to make it ready for decomposition. The code for this is available on the rmd. 
 
-```{r}
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: LATVIA ##########
 
 ## Data All Cause ####
@@ -824,7 +824,7 @@ row.names(latvia.c.10) <- NULL
 ```
 
 
-```{r}
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: RUSSIA ##########
 
 ## Data All Cause ####
@@ -914,7 +914,7 @@ row.names(russia.c.10) <- NULL
 ```
 
 
-```{r}
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
 ########## DATA PREPARATION: POLAND ##########
 
 ## Data All Cause ####
@@ -1002,137 +1002,9 @@ row.names(poland.c.10) <- NULL
 ```
 
 
-```{r}
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
 #load some functions and some info for graphs
 source('Functions_4.R')
-
-# Function for the standard deviation of the age at death distribution and life expectancy
-
-# e0.frommx ####
-e0.frommx <- function(nmx =  mx, sex=1, age = c(0, 1, seq(5, 85, 5)), nax = NULL){
-  n   <- c(diff(age), 999)
-  
-  if (is.null(nax)) {
-    nax <- 0.5 * n
-    if (n[2] == 4) {
-      if (sex == 1) {
-        if (nmx[1] >= 0.107) {
-          nax[1] <- 0.33
-          nax[2] <- 1.352
-        }
-        else {
-          nax[1] <- 0.045 + 2.684 * nmx[1]
-          nax[2] <- 1.651 - 2.816 * nmx[1]
-        }
-      }
-      if (sex == 2) {
-        if (nmx[1] >= 0.107) {
-          nax[1] <- 0.35
-          nax[2] <- 1.361
-        }
-        else {
-          nax[1] <- 0.053 + 2.8 * nmx[1]
-          nax[2] <- 1.522 - 1.518 * nmx[1]
-        }
-      }
-    }
-  }
-  nqx          <- (n * nmx)/(1 + (n - nax) * nmx)
-  nqx          <- c(nqx[-(length(nqx))], 1)
-  nqx[nqx > 1] <- 1
-  
-  npx <- 1 - nqx
-  lx <- cumprod(c(1, npx))
-  ndx <- -diff(lx)
-  lxpn <- lx[-1]
-  nLxpn <- n * lxpn + ndx * nax
-  nLx <- c(nLxpn[-length(nLxpn)], lxpn[length(lxpn)-1]/nmx[length(nmx)])
-  Tx <- rev(cumsum(rev(nLx)))
-  lx <- lx[1:length(age)]
-  ex <- Tx/lx
-  e0 <- ex[1]
-  
-  return(e0)
-}
-
-# Decomp ####
-
-Decomp <-function (func, rates1, rates2, N, ...) {
-  y1 <- func(rates1, ...)
-  y2 <- func(rates2, ...)
-  d <- rates2 - rates1
-  n <- length(rates1)
-  delta <- d/N
-  x <- rates1 + d * matrix(rep(0.5:(N - 0.5)/N, length(rates1)), 
-                           byrow = TRUE, ncol = N)
-  cc <- matrix(0, nrow = n, ncol = N)
-  for (j in 1:N) {
-    for (i in 1:n) {
-      z <- rep(0, n)
-      z[i] <- delta[i]/2
-      cc[i, j] <- func((x[, j] + z), ...) - func((x[, j] - 
-                                                    z), ...)
-    }
-  }
-  return(rowSums(cc))
-}
-
-# sd.frommx ####
-
-sd.frommx <- function(nmx =  mx, sex=1, age = c(0, 1, seq(5, 85, 5)), nax = NULL){
-  n   <- c(diff(age), 999)
-  
-  if (is.null(nax)) {
-    nax <- 0.5 * n
-    if (n[2] == 4) {
-      if (sex == 1) {
-        if (nmx[1] >= 0.107) {
-          nax[1] <- 0.33
-          nax[2] <- 1.352
-        }
-        else {
-          nax[1] <- 0.045 + 2.684 * nmx[1]
-          nax[2] <- 1.651 - 2.816 * nmx[1]
-        }
-      }
-      if (sex == 2) {
-        if (nmx[1] >= 0.107) {
-          nax[1] <- 0.35
-          nax[2] <- 1.361
-        }
-        else {
-          nax[1] <- 0.053 + 2.8 * nmx[1]
-          nax[2] <- 1.522 - 1.518 * nmx[1]
-        }
-      }
-    }
-  }
-  nqx          <- (n * nmx)/(1 + (n - nax) * nmx)
-  nqx          <- c(nqx[-(length(nqx))], 1)
-  nqx[nqx > 1] <- 1
-  
-  npx <- 1 - nqx
-  lx <- cumprod(c(1, npx))
-  ndx <- -diff(lx)
-  lxpn <- lx[-1]
-  nLxpn <- n * lxpn + ndx * nax
-  nLx <- c(nLxpn[-length(nLxpn)], lxpn[length(lxpn)-1]/nmx[length(nmx)])
-  Tx <- rev(cumsum(rev(nLx)))
-  lx <- lx[1:length(age)]
-  ex <- Tx/lx
-  nax[length(nax)] <- ex[length(ex)]
-  vx <- sum(ndx*(age+nax-ex[1L])^2)
-  sd <- sqrt(vx)
-  return(sd)
-}
-
-# sdfrommxc ####
-
-sdfrommxc <- function(mxcvec,sex=1){
-  dim(mxcvec) <- c(19,length(mxcvec)/19)
-  mx          <- rowSums(mxcvec)
-  sd.frommx(mx,sex)
-}
 
 # Saving the years as vectors ####
 
@@ -1149,7 +1021,7 @@ latvia.mx2 <- latvia.10$mx
 ```
 
 
-```{r}
+```{r wrangling, echo=FALSE, message=FALSE, results='hide'}
 ########## DECOMPOSITION: LIFE EXPECTANCY ##########
 
 ## Decomposition ####
@@ -1189,7 +1061,7 @@ c(latvia.with.decomp - latvia.original,
 
 The graphs 
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ## Labels for age-groups #### 
 age_names<-as.factor(c("0"="0","01"="01-04","05"="05-09","10"="10-14",
                        "15"="15-19","20"="20-24","25"="25-29",
@@ -1223,7 +1095,7 @@ Unlike the graph for Russia, Latvia and Poland shows that there has been overall
 
 We now extend our findings to cause of death decomposition to see which cause of death plays major role in the life expectancy changes in Latvia, Russia and Poland from 1990 t0 2010. 
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ### Extending to cause specific results
 
 ## Load some functions and some info for graphs ####
@@ -1250,7 +1122,7 @@ COD1.poland <- as.matrix(poland.c.90[,1:16])
 COD2.poland  <- as.matrix(poland.c.10[,1:16])
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DECOMPOSITION: LIFE EXPECTANCY ##########
 
 ## Decomposition ####
@@ -1313,7 +1185,7 @@ c(with.decomp.c.latvia - original.c.latvia,
 
 The graphs for the life expectancies decomposed by age and cause of death are below.
 
-```{r, fig.height=6}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ## Labels ####
 cause_names<-c("1"="Infectious diseases", 
                "2"="Neoplasm",
@@ -1395,7 +1267,7 @@ ggplot(data=results.c.poland,
 These set of graphs show the change in life expectancy decomposed by age and cause of death. For the all the countries, we can see that as suspected from the first graphs, the increase in the life expectancy at earlier ages is mostly from perinatal conditions and malformations. For the Russian case, the middle age groups had a decrease in life expectancy and the cause of death seemed to show that this is due to a rise in heart diseases. This can be due to change in alcohol and smoking habits as in Soviet Union, Gorbachov had campaigned against alcohol consumption and tobacco usage. For Poland, we observe that below age 55, there has been a decrease in death from external causes and for later ages there is a decrease for heart diseases so these are the main causes of deaths that contributed to the increase life expectancies in these age categories. For Latvia, between age 10 and 55, the main contributors to the change are again in external causes. These can be attributed to the stabilization of political, social and economical conditions for Latvia and Poland. 
 
 Now we can look at lifespan variation by calculating the standard deviation. 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 ########## DECOMPOSITION: LIFESPAN VARIATION ##########
 
 ## Decomposition ####
@@ -1446,7 +1318,7 @@ c(with.decomp.sd.latvia - original.sd.latvia,
   with.decomp.sd.poland- original.sd.poland)
 ```
 
-```{r, fig.height=6}
+```{r, echo=FALSE, message=TRUE, results='hide'}
 ## Data wrangling ####
 
 # Latvia
